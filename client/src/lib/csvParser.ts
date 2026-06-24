@@ -334,3 +334,24 @@ export function formatDateFull(dateStr: string): string {
   if (isNaN(dt.getTime())) return dateStr;
   return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 }
+
+export interface AccommodationEntry {
+  date: string;
+  amountCNY: number;
+  city: string;
+  merchant: string;
+}
+
+export function parseAccommodations(csvText: string): AccommodationEntry[] {
+  const raw = parseCSVText(csvText);
+  return raw
+    .filter(r => r['Amount (CNY)'] !== undefined && r['Amount (CNY)'] !== '' && !isNaN(parseFloat(r['Amount (CNY)'])))
+    .map(r => ({
+      date: (r.Date || '').trim().slice(0, 10),
+      amountCNY: parseFloat(r['Amount (CNY)'] || '0'),
+      city: r.City || 'Unknown',
+      merchant: r.Merchant || '',
+    }))
+    .filter(r => /^\d{4}-\d{2}-\d{2}$/.test(r.date))
+    .sort((a, b) => a.date.localeCompare(b.date));
+}

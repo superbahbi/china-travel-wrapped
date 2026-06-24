@@ -177,15 +177,15 @@ export default function Home() {
                 <div className="text-sm font-semibold tracking-widest uppercase opacity-70 mb-2">They've spent</div>
                 <div className="flex items-end gap-3 mb-1">
                   <div className="text-7xl sm:text-8xl font-bold text-white" style={{ fontFamily: 'Syne, sans-serif' }}>
-                    {formatCurrency(stats.grandTotal, stats.totalCNY)}
+                    {formatCurrency(stats.grandTotal, stats.grandTotalCNY)}
                   </div>
                 </div>
                 <div className="text-white/70 text-lg mb-6">
-                  That's <span className="font-bold text-white">¥{stats.totalCNY.toFixed(0)}</span> yuan across {stats.daysTracked} days of travel
+                  That's <span className="font-bold text-white">{currency === "usd" ? `$${stats.grandTotal.toFixed(0)}` : `¥${stats.grandTotalCNY.toFixed(0)}`}</span> yuan across {stats.daysTracked} days of travel
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <GlassPanel>
-                    <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>${stats.dailyAverage.toFixed(0)}</div>
+                    <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>{currency === "usd" ? `${currency === "usd" ? `$${stats.dailyAverage.toFixed(0)}` : `¥${stats.dailyAverageCNY.toFixed(0)}`}` : `¥${stats.dailyAverageCNY.toFixed(0)}`}</div>
                     <div className="text-xs opacity-70 mt-1">per day</div>
                   </GlassPanel>
                   <GlassPanel>
@@ -402,7 +402,7 @@ export default function Home() {
                           <div className="text-sm font-semibold">{t.merchant}</div>
                           <div className="text-xs text-white/50">{t.city} · {formatDate(t.date)}</div>
                         </div>
-                        <div className="mono text-sm font-bold">${Math.abs(t.usd).toFixed(2)}</div>
+                        <div className="mono text-sm font-bold">{currency === "usd" ? `$${Math.abs(t.usd).toFixed(2)}` : `¥${Math.abs(t.cny).toFixed(0)}`}</div>
                       </div>
                     ))}
                 </div>
@@ -603,7 +603,7 @@ export default function Home() {
             </WrappedCard>
 
             {/* ── CARD 14: Daily Log Table ── */}
-            <DailyLogCard stats={stats} />
+            <DailyLogCard stats={stats} currency={currency} />
 
             {/* ── CARD 15: Accommodation Daily ── */}
             {accommodations.length > 0 && (
@@ -784,7 +784,7 @@ function CityRouteCard({ stats }: { stats: TripStats }) {
 }
 
 // Daily log expandable card
-function DailyLogCard({ stats }: { stats: TripStats }) {
+function DailyLogCard({ stats, currency }: { stats: TripStats; currency: 'cny' | 'usd' }) {
   const { ref, visible } = useScrollReveal();
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -827,7 +827,7 @@ function DailyLogCard({ stats }: { stats: TripStats }) {
                       <span className="text-sm text-white/80">{t.merchant}</span>
                       <span className="text-xs text-white/30 ml-2">{t.category}</span>
                     </div>
-                    <span className="mono text-sm text-white/60">${Math.abs(t.usd).toFixed(2)}</span>
+                    <span className="mono text-sm text-white/60">{currency === "usd" ? `$${Math.abs(t.usd).toFixed(2)}` : `¥${Math.abs(t.cny).toFixed(0)}`}</span>
                   </div>
                 ))}
               </div>

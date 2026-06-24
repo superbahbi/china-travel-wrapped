@@ -4,7 +4,7 @@
 // Dark canvas, vivid gradient cards, animated stats
 // ============================================================
 import { useState, useEffect, useCallback } from 'react';
-import { parseTransactions, computeTripStats, TripStats, formatDate, formatDateFull, getCategoryColor, getCityGradient, CATEGORY_COLORS } from '@/lib/csvParser';
+import { parseTransactions, computeTripStats, TripStats, formatDate, formatDateFull, getCategoryColor, getCityGradient, CATEGORY_COLORS, parseAccommodations, AccommodationEntry } from '@/lib/csvParser';
 import { WrappedCard, StatNumber, CategoryPill, ProgressBar, GlassPanel } from '@/components/WrappedCard';
 import { CSVUpload } from '@/components/CSVUpload';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
@@ -18,9 +18,18 @@ const TRANSACTIONS_CSV_URL = 'https://raw.githubusercontent.com/superbahbi/china
 
 export default function Home() {
   const [stats, setStats] = useState<TripStats | null>(null);
+  const [accommodations, setAccommodations] = useState<AccommodationEntry[]>([]);
   const [csvFilename, setCsvFilename] = useState<string>('');
   const [loadStatus, setLoadStatus] = useState<'idle' | 'loaded' | 'error'>('idle');
   const [autoLoaded, setAutoLoaded] = useState(false);
+  const [currency, setCurrency] = useState<'cny' | 'usd'>('cny');
+
+  const formatCurrency = (usd: number, cny: number) => {
+    if (currency === 'usd') {
+      return `$${Math.abs(usd).toFixed(2)}`;
+    }
+    return `¥${Math.abs(cny).toFixed(0)}`;
+  };
 
   const processCSV = useCallback((text: string, filename: string) => {
     const txns = parseTransactions(text);
@@ -55,8 +64,39 @@ export default function Home() {
     refreshFromGitHub();
   }, [autoLoaded, refreshFromGitHub]);
 
+  // Load accommodations from GitHub
+  useEffect(() => {
+    fetch('https://raw.githubusercontent.com/superbahbi/china-travel-budget/main/accommodation.csv?t=' + Date.now())
+      .then(r => r.ok ? r.text() : Promise.reject('not found'))
+      .then(text => {
+        const accom = parseAccommodations(text);
+        setAccommodations(accom);
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="min-h-screen" style={{ background: '#0d0d0f' }}>
+      {/* Sticky Header with Currency Toggle */}
+      <header className="sticky top-0 z-50 backdrop-blur-md" style={{ background: 'rgba(13, 13, 15, 0.8)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+        <div className="container max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <img src={LOGO} alt="Yuan" className="w-6 h-6 rounded-full" />
+            <span className="text-sm font-semibold text-white/60">China Wrapped</span>
+          </div>
+          <button
+            onClick={() => setCurrency(curr => curr === 'cny' ? 'usd' : 'cny')}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wider uppercase transition-all"
+            style={{
+              background: currency === 'cny' ? 'rgba(255, 107, 107, 0.2)' : 'rgba(100, 200, 255, 0.2)',
+              color: currency === 'cny' ? '#FF6B6B' : '#64C8FF',
+              border: `1px solid ${currency === 'cny' ? 'rgba(255, 107, 107, 0.4)' : 'rgba(100, 200, 255, 0.4)'}`
+            }}
+          >
+            {currency === 'cny' ? '¥ CNY' : '$ USD'}
+          </button>
+        </div>
+      </header>
       {/* ── HERO ── */}
       <header
         className="relative min-h-[70vh] flex flex-col items-center justify-center text-center overflow-hidden"
@@ -146,7 +186,9 @@ export default function Home() {
               <div className="p-8 text-white">
                 <div className="text-sm font-semibold tracking-widest uppercase opacity-70 mb-2">You've spent</div>
                 <div className="flex items-end gap-3 mb-1">
-                  <StatNumber value={stats.grandTotal} prefix="$" decimals={0} className="text-8xl text-white" />
+                  <div className="text-7xl sm:text-8xl font-bold text-white" style={{ fontFamily: 'Syne, sans-serif' }}>
+                    {formatCurrency(stats.grandTotal, stats.totalCNY)}
+                  </div>
                 </div>
                 <div className="text-white/70 text-lg mb-6">
                   That's <span className="font-bold text-white">¥{stats.totalCNY.toFixed(0)}</span> yuan across {stats.daysTracked} days
@@ -572,6 +614,39 @@ export default function Home() {
 
             {/* ── CARD 14: Daily Log Table ── */}
             <DailyLogCard stats={stats} />
+
+            {/* ── CARD 15: Accommodation Daily ── */}
+            {accommodations.length > 0 && (
+              <WrappedCard gradient="linear-gradient(135deg, #8360c3 0%, #2ebf91 100%)">
+                <div className="p-8 text-white">
+                  <div className="flex items-center gap-2 mb-6">
+                    <Hotel className="w-5 h-5" />
+                    <div className="text-sm font-semibold tracking-widest uppercase opacity-70">Where You Slept</div>
+                  </div>
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {accommodations.map((acc, i) => (
+                      <div key={i} className="flex justify-between items-center py-2 border-b border-white/10">
+                        <div>
+                          <div className="text-sm font-medium text-white">{acc.merchant}</div>
+                          <div className="text-xs text-white/50">{formatDateFull(acc.date)} · {acc.city}</div>
+                        </div>
+                        <div className="text-sm mono font-bold text-white/80">¥{acc.amountCNY.toFixed(0)}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-6 pt-4 border-t border-white/20">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-white/60">Total Accommodations</span>
+                      <span className="font-bold">¥{accommodations.reduce((s, a) => s + a.amountCNY, 0).toFixed(0)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm mt-2">
+                      <span className="text-white/60">Average per night</span>
+                      <span className="font-bold">¥{(accommodations.reduce((s, a) => s + a.amountCNY, 0) / accommodations.length).toFixed(0)}</span>
+                    </div>
+                  </div>
+                </div>
+              </WrappedCard>
+            )}
 
             {/* ── Footer ── */}
             <div className="text-center py-8 text-white/30 text-sm">

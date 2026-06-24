@@ -14,7 +14,8 @@ import { MapPin, TrendingUp, Utensils, Hotel, Train, ShoppingBag, Calendar, Zap,
 const HERO_BG = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/hero-bg-ZsqqDYb5LYENCn3sc2jL3g.webp';
 const LOGO = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/logo-yuan-6cy4BnEm6t85zTyUz2wrCC.webp';
 
-const TRANSACTIONS_CSV_URL = 'https://raw.githubusercontent.com/superbahbi/china-travel-budget/main/transactions.csv';
+// CSV URLs - using local data folder for better reliability
+const TRANSACTIONS_CSV_URL = '/data/transactions.csv';
 
 export default function Home() {
   const [stats, setStats] = useState<TripStats | null>(null);
@@ -70,9 +71,9 @@ export default function Home() {
     refreshFromGitHub();
   }, [autoLoaded, refreshFromGitHub]);
 
-  // Load accommodations from GitHub
+  // Load accommodations from local data folder
   useEffect(() => {
-    fetch('https://raw.githubusercontent.com/superbahbi/china-travel-budget/main/accommodation.csv?t=' + Date.now())
+    fetch('/data/accommodation.csv?t=' + Date.now())
       .then(r => r.ok ? r.text() : Promise.reject('not found'))
       .then(text => {
         const accom = parseAccommodations(text);

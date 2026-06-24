@@ -1,4 +1,3 @@
-// ============================================================
 // CSV Parser & Data Processing for China Travel Wrapped
 // Handles transactions.csv from the GitHub repo
 // ============================================================
@@ -42,25 +41,33 @@ export interface CategoryStats {
 
 export interface TripStats {
   grandTotal: number;
-  totalCNY: number;
+  grandTotalCNY: number;
   daysTracked: number;
   transactionCount: number;
   dailyAverage: number;
+  dailyAverageCNY: number;
   citiesVisited: number;
   biggestPurchase: Transaction | null;
   cheapestDay: DayStats | null;
   mostExpensiveDay: DayStats | null;
-  topMerchant: { name: string; count: number; total: number } | null;
+  topMerchant: { name: string; count: number; total: number; totalCNY: number } | null;
   topCategory: CategoryStats | null;
   accommodationTotal: number;
+  accommodationTotalCNY: number;
   foodTotal: number;
+  foodTotalCNY: number;
   transportTotal: number;
+  transportTotalCNY: number;
   tripWideTotal: number;
+  tripWideTotalCNY: number;
   avgTransactionSize: number;
-  longestStreak: number; // consecutive days with spending
+  avgTransactionSizeCNY: number;
+  longestStreak: number;
   dateRange: { start: string; end: string };
-  weekdaySpend: Record<string, number>; // Mon-Sun totals
+  weekdaySpend: Record<string, number>;
+  weekdaySpendCNY: Record<string, number>;
   paymentMethods: Record<string, number>;
+  paymentMethodsCNY: Record<string, number>;
   mostVisitedCity: CityStats | null;
   cityStats: CityStats[];
   categoryStats: CategoryStats[];
@@ -78,95 +85,72 @@ export const CATEGORY_COLORS: Record<string, string> = {
   Accommodation: '#8360c3',
   Transport: '#2193b0',
   'Intercity Transport': '#11998e',
-  Shopping: '#f7971e',
-  Activities: '#f953c6',
-  Laundry: '#6dd5ed',
-  'Personal Care': '#ffd200',
-  Subscription: '#b91d73',
-  Uncategorized: '#555',
-};
-
-export const CITY_GRADIENTS: Record<string, string> = {
-  Shenzhen: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)',
-  Guangzhou: 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
-  Guilin: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
-  Yangshuo: 'linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%)',
-  Kunming: 'linear-gradient(135deg, #8360c3 0%, #2ebf91 100%)',
-  "Pu'er": 'linear-gradient(135deg, #f953c6 0%, #b91d73 100%)',
-  China: 'linear-gradient(135deg, #555 0%, #888 100%)',
+  Activities: '#F4A261',
+  Shopping: '#E76F51',
+  'Trip-wide': '#95B8D1',
 };
 
 export function getCategoryColor(category: string): string {
-  return CATEGORY_COLORS[category] || '#888';
+  return CATEGORY_COLORS[category] || '#9D84B7';
 }
 
 export function getCityGradient(city: string): string {
-  return CITY_GRADIENTS[city] || 'linear-gradient(135deg, #555 0%, #888 100%)';
+  const gradients: Record<string, string> = {
+    'Shanghai': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    'Beijing': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    'Chengdu': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    'Xi\'an': 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+    'Hangzhou': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+    'Guilin': 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+    'Yangshuo': 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+    'Nanjing': 'linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%)',
+    'Suzhou': 'linear-gradient(135deg, #2e2e78 0%, #662d8c 100%)',
+    'Wuhan': 'linear-gradient(135deg, #ffa751 0%, #ffe259 100%)',
+    'Chongqing': 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)',
+    'Kunming': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+    'Lijiang': 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+    'Dali': 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+  };
+  return gradients[city] || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
 }
 
-function parseCSVText(text: string): Record<string, string>[] {
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let field = '';
-  let inQuotes = false;
-  const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+export function parseTransactions(csv: string): Transaction[] {
+  const lines = csv.trim().split('\n');
+  if (lines.length < 2) return [];
 
-  for (let i = 0; i < normalized.length; i++) {
-    const c = normalized[i];
-    if (inQuotes) {
-      if (c === '"') {
-        if (normalized[i + 1] === '"') { field += '"'; i++; }
-        else { inQuotes = false; }
-      } else {
-        field += c;
-      }
-    } else {
-      if (c === '"') { inQuotes = true; }
-      else if (c === ',') { row.push(field); field = ''; }
-      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
-      else { field += c; }
-    }
-  }
-  if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
+  const headers = lines[0].split(',').map(h => h.trim());
+  const dateIdx = headers.indexOf('Date');
+  const merchantIdx = headers.indexOf('Merchant');
+  const cnyIdx = headers.indexOf('CNY');
+  const usdIdx = headers.indexOf('USD');
+  const categoryIdx = headers.indexOf('Category');
+  const paymentIdx = headers.indexOf('Payment');
+  const cityIdx = headers.indexOf('City');
+  const expenseTypeIdx = headers.indexOf('Expense Type');
+  const notesIdx = headers.indexOf('Notes');
 
-  // Drop trailing empty rows
-  while (rows.length && rows[rows.length - 1].every(c => c.trim() === '')) rows.pop();
-  if (rows.length === 0) return [];
-
-  const headers = rows[0].map(h => h.trim());
-  return rows.slice(1).map(r => {
-    const obj: Record<string, string> = {};
-    headers.forEach((h, i) => { obj[h] = r[i] !== undefined ? r[i].trim() : ''; });
-    return obj;
-  });
-}
-
-export function parseTransactions(csvText: string): Transaction[] {
-  const raw = parseCSVText(csvText);
-  return raw
-    .filter(r => r.USD !== undefined && r.USD !== '' && !isNaN(parseFloat(r.USD)))
-    .map((r, idx) => ({
-      id: parseInt(r['#'] || String(idx + 1)),
-      date: (r.Date || '').trim().slice(0, 10),
-      merchant: r.Merchant || '',
-      cny: parseFloat(r.CNY || '0'),
-      usd: parseFloat(r.USD || '0'),
-      category: r.Category || 'Uncategorized',
-      payment: r.Payment || '',
-      city: r.City || 'Unknown',
-      expenseType: r['Expense Type'] || '',
-      notes: r.Notes || '',
+  return lines
+    .slice(1)
+    .map((line, id) => ({
+      id,
+      date: (line.split(',')[dateIdx] || '').trim(),
+      merchant: (line.split(',')[merchantIdx] || '').trim(),
+      cny: parseFloat((line.split(',')[cnyIdx] || '0').trim()) || 0,
+      usd: parseFloat((line.split(',')[usdIdx] || '0').trim()) || 0,
+      category: (line.split(',')[categoryIdx] || '').trim(),
+      payment: (line.split(',')[paymentIdx] || '').trim(),
+      city: (line.split(',')[cityIdx] || '').trim(),
+      expenseType: (line.split(',')[expenseTypeIdx] || '').trim(),
+      notes: (line.split(',')[notesIdx] || '').trim(),
     }))
     .filter(r => /^\d{4}-\d{2}-\d{2}$/.test(r.date));
 }
 
 export function computeTripStats(transactions: Transaction[]): TripStats {
-  // Only count expenses (negative USD values)
   const expenses = transactions.filter(t => t.usd < 0);
   const grandTotal = expenses.reduce((s, t) => s + Math.abs(t.usd), 0);
-  const totalCNY = expenses.reduce((s, t) => s + Math.abs(t.cny), 0);
+  const grandTotalCNY = expenses.reduce((s, t) => s + Math.abs(t.cny), 0);
 
-  // Daily grouping
   const byDay: Record<string, Transaction[]> = {};
   transactions.forEach(t => {
     if (!byDay[t.date]) byDay[t.date] = [];
@@ -176,7 +160,6 @@ export function computeTripStats(transactions: Transaction[]): TripStats {
   const days = Object.keys(byDay).sort();
   const daysTracked = days.length;
 
-  // Day stats
   const dayStats: DayStats[] = days.map(date => {
     const txns = byDay[date];
     const total = txns.filter(t => t.usd < 0).reduce((s, t) => s + Math.abs(t.usd), 0);
@@ -190,7 +173,6 @@ export function computeTripStats(transactions: Transaction[]): TripStats {
     return { date, total, transactions: txns, topCategory, cities };
   });
 
-  // Category stats
   const catTotals: Record<string, { total: number; count: number }> = {};
   expenses.forEach(t => {
     if (!catTotals[t.category]) catTotals[t.category] = { total: 0, count: 0 };
@@ -207,7 +189,6 @@ export function computeTripStats(transactions: Transaction[]): TripStats {
       color: getCategoryColor(category),
     }));
 
-  // City stats
   const cityTotals: Record<string, { total: number; days: Set<string>; count: number }> = {};
   expenses.forEach(t => {
     if (isGenericCity(t.city)) return;
@@ -226,7 +207,6 @@ export function computeTripStats(transactions: Transaction[]): TripStats {
       avgPerDay: days.size > 0 ? total / days.size : 0,
     }));
 
-  // Highlights
   const biggestPurchase = expenses.reduce<Transaction | null>(
     (max, t) => (!max || Math.abs(t.usd) > Math.abs(max.usd) ? t : max), null
   );
@@ -238,25 +218,34 @@ export function computeTripStats(transactions: Transaction[]): TripStats {
     .filter(d => d.total > 0)
     .reduce<DayStats | null>((min, d) => (!min || d.total < min.total ? d : min), null);
 
-  // Top merchant
-  const merchantMap: Record<string, { count: number; total: number }> = {};
+  const merchantMap: Record<string, { count: number; total: number; totalCNY: number }> = {};
   expenses.forEach(t => {
-    if (!merchantMap[t.merchant]) merchantMap[t.merchant] = { count: 0, total: 0 };
+    if (!merchantMap[t.merchant]) merchantMap[t.merchant] = { count: 0, total: 0, totalCNY: 0 };
     merchantMap[t.merchant].count += 1;
     merchantMap[t.merchant].total += Math.abs(t.usd);
+    merchantMap[t.merchant].totalCNY += Math.abs(t.cny);
   });
   const topMerchantEntry = Object.entries(merchantMap).sort((a, b) => b[1].count - a[1].count)[0];
   const topMerchant = topMerchantEntry
     ? { name: topMerchantEntry[0], ...topMerchantEntry[1] }
     : null;
 
-  // Category totals
   const foodTotal = catTotals['Food']?.total || 0;
   const accommodationTotal = catTotals['Accommodation']?.total || 0;
   const transportTotal = (catTotals['Transport']?.total || 0) + (catTotals['Intercity Transport']?.total || 0);
   const tripWideTotal = expenses.filter(t => isGenericCity(t.city)).reduce((s, t) => s + Math.abs(t.usd), 0);
 
-  // Weekday spend
+  const catTotalsCNY: Record<string, { total: number; count: number }> = {};
+  expenses.forEach(t => {
+    if (!catTotalsCNY[t.category]) catTotalsCNY[t.category] = { total: 0, count: 0 };
+    catTotalsCNY[t.category].total += Math.abs(t.cny);
+    catTotalsCNY[t.category].count += 1;
+  });
+  const foodTotalCNY = catTotalsCNY['Food']?.total || 0;
+  const accommodationTotalCNY = catTotalsCNY['Accommodation']?.total || 0;
+  const transportTotalCNY = (catTotalsCNY['Transport']?.total || 0) + (catTotalsCNY['Intercity Transport']?.total || 0);
+  const tripWideTotalCNY = expenses.filter(t => isGenericCity(t.city)).reduce((s, t) => s + Math.abs(t.cny), 0);
+
   const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const weekdaySpend: Record<string, number> = {};
   weekdayNames.forEach(d => { weekdaySpend[d] = 0; });
@@ -267,13 +256,27 @@ export function computeTripStats(transactions: Transaction[]): TripStats {
     }
   });
 
-  // Payment methods
+  const weekdaySpendCNY: Record<string, number> = {};
+  weekdayNames.forEach(d => { weekdaySpendCNY[d] = 0; });
+  dayStats.forEach(d => {
+    const txns = byDay[d.date];
+    const totalCNY = txns.filter(t => t.usd < 0).reduce((s, t) => s + Math.abs(t.cny), 0);
+    const dt = new Date(d.date + 'T00:00:00');
+    if (!isNaN(dt.getTime())) {
+      weekdaySpendCNY[weekdayNames[dt.getDay()]] += totalCNY;
+    }
+  });
+
   const paymentMethods: Record<string, number> = {};
   expenses.forEach(t => {
     paymentMethods[t.payment] = (paymentMethods[t.payment] || 0) + Math.abs(t.usd);
   });
 
-  // Consecutive days streak
+  const paymentMethodsCNY: Record<string, number> = {};
+  expenses.forEach(t => {
+    paymentMethodsCNY[t.payment] = (paymentMethodsCNY[t.payment] || 0) + Math.abs(t.cny);
+  });
+
   let longestStreak = 0, currentStreak = 0;
   for (let i = 0; i < days.length; i++) {
     if (i === 0) { currentStreak = 1; continue; }
@@ -291,10 +294,11 @@ export function computeTripStats(transactions: Transaction[]): TripStats {
 
   return {
     grandTotal,
-    totalCNY,
+    grandTotalCNY,
     daysTracked,
     transactionCount: expenses.length,
     dailyAverage: daysTracked > 0 ? grandTotal / daysTracked : 0,
+    dailyAverageCNY: daysTracked > 0 ? grandTotalCNY / daysTracked : 0,
     citiesVisited: cityStats.length,
     biggestPurchase,
     cheapestDay,
@@ -302,17 +306,24 @@ export function computeTripStats(transactions: Transaction[]): TripStats {
     topMerchant,
     topCategory: categoryStats[0] || null,
     accommodationTotal,
+    accommodationTotalCNY,
     foodTotal,
+    foodTotalCNY,
     transportTotal,
+    transportTotalCNY,
     tripWideTotal,
+    tripWideTotalCNY,
     avgTransactionSize: expenses.length > 0 ? grandTotal / expenses.length : 0,
+    avgTransactionSizeCNY: expenses.length > 0 ? grandTotalCNY / expenses.length : 0,
     longestStreak,
     dateRange: {
       start: days[0] || '',
       end: days[days.length - 1] || '',
     },
     weekdaySpend,
+    weekdaySpendCNY,
     paymentMethods,
+    paymentMethodsCNY,
     mostVisitedCity: cityStats.sort((a, b) => b.days - a.days)[0] || null,
     cityStats: cityStats.sort((a, b) => b.total - a.total),
     categoryStats,
@@ -332,26 +343,36 @@ export function formatDateFull(dateStr: string): string {
   if (!dateStr) return '—';
   const dt = new Date(dateStr + 'T00:00:00');
   if (isNaN(dt.getTime())) return dateStr;
-  return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
 }
 
 export interface AccommodationEntry {
   date: string;
-  amountCNY: number;
-  city: string;
   merchant: string;
+  amountCNY: number;
+  amountUSD: number;
+  city: string;
 }
 
-export function parseAccommodations(csvText: string): AccommodationEntry[] {
-  const raw = parseCSVText(csvText);
-  return raw
-    .filter(r => r['Amount (CNY)'] !== undefined && r['Amount (CNY)'] !== '' && !isNaN(parseFloat(r['Amount (CNY)'])))
-    .map(r => ({
-      date: (r.Date || '').trim().slice(0, 10),
-      amountCNY: parseFloat(r['Amount (CNY)'] || '0'),
-      city: r.City || 'Unknown',
-      merchant: r.Merchant || '',
+export function parseAccommodations(csv: string): AccommodationEntry[] {
+  const lines = csv.trim().split('\n');
+  if (lines.length < 2) return [];
+
+  const headers = lines[0].split(',').map(h => h.trim());
+  const dateIdx = headers.indexOf('Date');
+  const merchantIdx = headers.indexOf('Merchant');
+  const cnyIdx = headers.indexOf('CNY');
+  const usdIdx = headers.indexOf('USD');
+  const cityIdx = headers.indexOf('City');
+
+  return lines
+    .slice(1)
+    .map(line => ({
+      date: (line.split(',')[dateIdx] || '').trim(),
+      merchant: (line.split(',')[merchantIdx] || '').trim(),
+      amountCNY: parseFloat((line.split(',')[cnyIdx] || '0').trim()) || 0,
+      amountUSD: parseFloat((line.split(',')[usdIdx] || '0').trim()) || 0,
+      city: (line.split(',')[cityIdx] || '').trim(),
     }))
-    .filter(r => /^\d{4}-\d{2}-\d{2}$/.test(r.date))
-    .sort((a, b) => a.date.localeCompare(b.date));
+    .filter(r => /^\d{4}-\d{2}-\d{2}$/.test(r.date));
 }

@@ -23,15 +23,11 @@ export default function Home() {
   const [csvFilename, setCsvFilename] = useState<string>('');
   const [loadStatus, setLoadStatus] = useState<'idle' | 'loaded' | 'error'>('idle');
   const [autoLoaded, setAutoLoaded] = useState(false);
-  const [currency, setCurrency] = useState<'cny' | 'usd'>('cny');
+  const [currency, setCurrency] = useState<'cny' | 'usd'>('usd');
 
   const formatCurrency = (usd: number, cny: number, showBoth = false) => {
     const absUsd = Math.abs(usd);
-    const absCny = Math.abs(cny);
-    if (currency === 'usd') {
-      return showBoth ? `$${absUsd.toFixed(2)}` : `$${absUsd.toFixed(2)}`;
-    }
-    return showBoth ? `¥${absCny.toFixed(0)}` : `¥${absCny.toFixed(0)}`;
+    return `$${absUsd.toFixed(2)}`;
   };
 
   const convertCurrency = (usd: number, cny: number) => {
@@ -107,17 +103,7 @@ export default function Home() {
             <img src={LOGO} alt="Yuan" className="w-6 h-6 rounded-full" />
             <span className="text-sm font-semibold text-white/60">China Wrapped</span>
           </div>
-          <button
-            onClick={() => setCurrency(curr => curr === 'cny' ? 'usd' : 'cny')}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wider uppercase transition-all"
-            style={{
-              background: currency === 'cny' ? 'rgba(255, 107, 107, 0.2)' : 'rgba(100, 200, 255, 0.2)',
-              color: currency === 'cny' ? '#FF6B6B' : '#64C8FF',
-              border: `1px solid ${currency === 'cny' ? 'rgba(255, 107, 107, 0.4)' : 'rgba(100, 200, 255, 0.4)'}`
-            }}
-          >
-            {currency === 'cny' ? '¥ CNY' : '$ USD'}
-          </button>
+
         </div>
       </header>
       {/* ── HERO ── */}
@@ -198,11 +184,11 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="text-white/70 text-lg mb-6">
-                  That's <span className="font-bold text-white">{currency === "usd" ? `$${stats.grandTotal.toFixed(0)}` : `¥${stats.grandTotalCNY.toFixed(0)}`}</span> yuan across {stats.daysTracked} days of travel
+                  That's <span className="font-bold text-white">${stats.grandTotal.toFixed(0)}</span> spent across {stats.daysTracked} days of travel
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <GlassPanel>
-                    <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>{currency === "usd" ? `${currency === "usd" ? `$${stats.dailyAverage.toFixed(0)}` : `¥${stats.dailyAverageCNY.toFixed(0)}`}` : `¥${stats.dailyAverageCNY.toFixed(0)}`}</div>
+                    <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>${stats.dailyAverage.toFixed(0)}</div>
                     <div className="text-xs opacity-70 mt-1">per day</div>
                   </GlassPanel>
                   <GlassPanel>
@@ -637,18 +623,18 @@ export default function Home() {
                           <div className="text-sm font-medium text-white">{acc.merchant}</div>
                           <div className="text-xs text-white/50">{formatDateFull(acc.date)} · {acc.city}</div>
                         </div>
-                        <div className="text-sm mono font-bold text-white/80">¥{acc.amountCNY.toFixed(0)}</div>
+                        <div className="text-sm mono font-bold text-white/80">${acc.amountUSD.toFixed(2)}</div>
                       </div>
                     ))}
                   </div>
                   <div className="mt-6 pt-4 border-t border-white/20">
                     <div className="flex justify-between text-sm">
                       <span className="text-white/60">Total Accommodations</span>
-                      <span className="font-bold">¥{accommodations.reduce((s, a) => s + a.amountCNY, 0).toFixed(0)}</span>
+                      <span className="font-bold">${accommodations.reduce((s, a) => s + a.amountUSD, 0).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm mt-2">
                       <span className="text-white/60">Average per night</span>
-                      <span className="font-bold">¥{(accommodations.reduce((s, a) => s + a.amountCNY, 0) / accommodations.length).toFixed(0)}</span>
+                      <span className="font-bold">${(accommodations.reduce((s, a) => s + a.amountUSD, 0) / accommodations.length).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

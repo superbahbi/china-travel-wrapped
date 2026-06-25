@@ -114,35 +114,57 @@ export function getCityGradient(city: string): string {
   return gradients[city] || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
 }
 
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      result.push(current.trim().replace(/^"|"$/g, ''));
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  result.push(current.trim().replace(/^"|"$/g, ''));
+  return result;
+}
+
 export function parseTransactions(csv: string): Transaction[] {
   const lines = csv.trim().split('\n');
   if (lines.length < 2) return [];
 
-  const headers = lines[0].split(',').map(h => h.trim());
-  const dateIdx = headers.indexOf('Date');
-  const merchantIdx = headers.indexOf('Merchant');
-  const cnyIdx = headers.indexOf('CNY');
-  const usdIdx = headers.indexOf('USD');
-  const categoryIdx = headers.indexOf('Category');
-  const paymentIdx = headers.indexOf('Payment');
-  const cityIdx = headers.indexOf('City');
-  const expenseTypeIdx = headers.indexOf('Expense Type');
-  const notesIdx = headers.indexOf('Notes');
+  const headerLine = parseCSVLine(lines[0]);
+  const dateIdx = headerLine.indexOf('Date');
+  const merchantIdx = headerLine.indexOf('Merchant');
+  const cnyIdx = headerLine.indexOf('CNY');
+  const usdIdx = headerLine.indexOf('USD');
+  const categoryIdx = headerLine.indexOf('Category');
+  const paymentIdx = headerLine.indexOf('Payment');
+  const cityIdx = headerLine.indexOf('City');
+  const expenseTypeIdx = headerLine.indexOf('Expense Type');
+  const notesIdx = headerLine.indexOf('Notes');
 
   return lines
     .slice(1)
-    .map((line, id) => ({
-      id,
-      date: (line.split(',')[dateIdx] || '').trim(),
-      merchant: (line.split(',')[merchantIdx] || '').trim(),
-      cny: parseFloat((line.split(',')[cnyIdx] || '0').trim()) || 0,
-      usd: parseFloat((line.split(',')[usdIdx] || '0').trim()) || 0,
-      category: (line.split(',')[categoryIdx] || '').trim(),
-      payment: (line.split(',')[paymentIdx] || '').trim(),
-      city: (line.split(',')[cityIdx] || '').trim(),
-      expenseType: (line.split(',')[expenseTypeIdx] || '').trim(),
-      notes: (line.split(',')[notesIdx] || '').trim(),
-    }))
+    .map((line, id) => {
+      const fields = parseCSVLine(line);
+      return {
+        id,
+        date: (fields[dateIdx] || '').split(' ')[0],
+        merchant: fields[merchantIdx] || '',
+        cny: parseFloat(fields[cnyIdx] || '0') || 0,
+        usd: parseFloat(fields[usdIdx] || '0') || 0,
+        category: fields[categoryIdx] || '',
+        payment: fields[paymentIdx] || '',
+        city: fields[cityIdx] || '',
+        expenseType: fields[expenseTypeIdx] || '',
+        notes: fields[notesIdx] || '',
+      };
+    })
     .filter(r => /^\d{4}-\d{2}-\d{2}$/.test(r.date));
 }
 

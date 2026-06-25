@@ -39,12 +39,16 @@ export default function Home() {
   };
 
   const processCSV = useCallback((text: string, filename: string) => {
+    console.log('Processing CSV, text length:', text.length);
     const txns = parseTransactions(text);
+    console.log('Parsed transactions:', txns.length);
     if (txns.length === 0) {
+      console.error('No transactions parsed!');
       setLoadStatus('error');
       return;
     }
     const computed = computeTripStats(txns);
+    console.log('Computed stats:', computed);
     setStats(computed);
     setCsvFilename(filename);
     setLoadStatus('loaded');
@@ -53,15 +57,22 @@ export default function Home() {
   // Auto-load from GitHub repo
   const refreshFromGitHub = useCallback(() => {
     setLoadStatus('idle');
-    fetch(TRANSACTIONS_CSV_URL + '?t=' + Date.now())
-      .then(r => r.ok ? r.text() : Promise.reject('not found'))
-      .then(text => processCSV(text, 'transactions.csv (live from GitHub)'))
-      .catch(() => {
-        // Fallback: try local
-        fetch('transactions.csv?t=' + Date.now())
-          .then(r => r.ok ? r.text() : Promise.reject('not found'))
-          .then(text => processCSV(text, 'transactions.csv'))
-          .catch(() => setLoadStatus('idle'));
+    const url = TRANSACTIONS_CSV_URL + '?t=' + Date.now();
+    console.log('Fetching CSV from:', url);
+    fetch(url)
+      .then(r => {
+        console.log('CSV fetch response:', r.status, r.ok);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
+      })
+      .then(text => {
+        console.log('CSV loaded, size:', text.length);
+        if (!text || text.trim().length === 0) throw new Error('Empty CSV');
+        processCSV(text, 'transactions.csv');
+      })
+      .catch(err => {
+        console.error('Failed to load CSV:', err);
+        setLoadStatus('idle');
       });
   }, [processCSV]);
 
@@ -74,12 +85,17 @@ export default function Home() {
   // Load accommodations from local data folder
   useEffect(() => {
     fetch('/data/accommodation.csv?t=' + Date.now())
-      .then(r => r.ok ? r.text() : Promise.reject('not found'))
-      .then(text => {
-        const accom = parseAccommodations(text);
-        setAccommodations(accom);
+      .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
       })
-      .catch(() => {});
+      .then(text => {
+        if (text && text.trim().length > 0) {
+          const accom = parseAccommodations(text);
+          setAccommodations(accom);
+        }
+      })
+      .catch(err => console.log('Accommodation CSV not found:', err));
   }, []);
 
   return (

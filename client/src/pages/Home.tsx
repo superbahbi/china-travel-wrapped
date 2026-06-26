@@ -662,7 +662,7 @@ function HighlightMiniCard({ gradient, label, value, sub, delay = 0, dark = fals
   return (
     <div
       ref={ref}
-      className="reveal rounded-2xl p-5 text-white"
+      className={`reveal rounded-2xl p-5 text-white ${visible ? 'visible' : ''}`}
       style={{ background: gradient, transitionDelay: `${delay}ms` }}
     >
       <div className={`text-xs font-semibold tracking-widest uppercase mb-2 ${dark ? 'text-black/50' : 'text-white/60'}`}>{label}</div>
@@ -690,7 +690,7 @@ function PaceTrackerCard({ stats }: { stats: TripStats }) {
   return (
     <div
       ref={ref}
-      className="reveal rounded-3xl overflow-hidden p-8 text-white"
+      className={`reveal rounded-3xl overflow-hidden p-8 text-white ${visible ? 'visible' : ''}`}
       style={{ background: 'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)', transitionDelay: '0ms' }}
     >
       <div className="text-sm font-semibold tracking-widest uppercase text-white/50 mb-2">Spending Pace</div>
@@ -759,7 +759,7 @@ function CityRouteCard({ stats }: { stats: TripStats }) {
   return (
     <div
       ref={ref}
-      className="reveal rounded-3xl overflow-hidden p-8 text-white"
+      className={`reveal rounded-3xl overflow-hidden p-8 text-white ${visible ? 'visible' : ''}`}
       style={{ background: 'linear-gradient(135deg, #1a0533 0%, #0d1b2a 100%)', border: '1px solid rgba(255,255,255,0.08)', transitionDelay: '0ms' }}
     >
       <div className="text-sm font-semibold tracking-widest uppercase text-white/50 mb-2">Your Route</div>
@@ -794,7 +794,7 @@ function DailyLogCard({ stats, currency }: { stats: TripStats; currency: 'cny' |
   return (
     <div
       ref={ref}
-      className="reveal rounded-3xl overflow-hidden"
+      className={`reveal rounded-3xl overflow-hidden ${visible ? 'visible' : ''}`}
       style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #0d0d0f 100%)', border: '1px solid rgba(255,255,255,0.08)' }}
     >
       <div className="p-6 pb-4">

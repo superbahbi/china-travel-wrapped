@@ -380,7 +380,9 @@ export function parseAccommodations(csv: string): AccommodationEntry[] {
   const lines = csv.trim().split('\n');
   if (lines.length < 2) return [];
 
-  const headers = lines[0].split(',').map(h => h.trim());
+  // Parse header
+  const headerLine = lines[0];
+  const headers = parseCSVLine(headerLine);
   const dateIdx = headers.indexOf('Date');
   const merchantIdx = headers.indexOf('Merchant');
   const cnyIdx = headers.indexOf('CNY');
@@ -389,12 +391,15 @@ export function parseAccommodations(csv: string): AccommodationEntry[] {
 
   return lines
     .slice(1)
-    .map(line => ({
-      date: (line.split(',')[dateIdx] || '').trim(),
-      merchant: (line.split(',')[merchantIdx] || '').trim(),
-      amountCNY: parseFloat((line.split(',')[cnyIdx] || '0').trim()) || 0,
-      amountUSD: parseFloat((line.split(',')[usdIdx] || '0').trim()) || 0,
-      city: (line.split(',')[cityIdx] || '').trim(),
-    }))
+    .map(line => {
+      const fields = parseCSVLine(line);
+      return {
+        date: (fields[dateIdx] || '').trim().substring(0, 10), // Extract YYYY-MM-DD
+        merchant: (fields[merchantIdx] || '').trim(),
+        amountCNY: parseFloat((fields[cnyIdx] || '0').trim()) || 0,
+        amountUSD: parseFloat((fields[usdIdx] || '0').trim()) || 0,
+        city: (fields[cityIdx] || '').trim(),
+      };
+    })
     .filter(r => /^\d{4}-\d{2}-\d{2}$/.test(r.date));
 }

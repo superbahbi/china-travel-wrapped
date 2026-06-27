@@ -3,10 +3,7 @@
 // Style: Gradient Feast (Spotify Wrapped × Chinese Travel)
 // Dark canvas, vivid gradient cards, animated stats
 // ============================================================
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useTheme } from '@/contexts/ThemeContext';
-import { CSVUpload } from '@/components/CSVUpload';
-import { Sun, Moon, Upload as UploadIcon } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
 import { parseTransactions, computeTripStats, TripStats, formatDate, formatDateFull, getCategoryColor, getCityGradient, CATEGORY_COLORS, parseAccommodations, AccommodationEntry } from '@/lib/csvParser';
 import { WrappedCard, StatNumber, CategoryPill, ProgressBar, GlassPanel } from '@/components/WrappedCard';
 
@@ -24,22 +21,14 @@ const TRANSACTIONS_CSV_URL = '/data/transactions.csv';
 export default function Home() {
   const [stats, setStats] = useState<TripStats | null>(null);
   const [accommodations, setAccommodations] = useState<AccommodationEntry[]>([]);
-  const [csvFilename, setCsvFilename] = useState<string>('');
-  const [loadStatus, setLoadStatus] = useState<'idle' | 'loaded' | 'error'>('idle');
   const [autoLoaded, setAutoLoaded] = useState(false);
-  const [currency, setCurrency] = useState<'cny' | 'usd'>('usd');
-  const { theme, toggleTheme } = useTheme();
-  const [showUpload, setShowUpload] = useState(false);
 
-  const formatCurrency = (usd: number, cny: number) => {
-    if (currency === 'usd') {
-      return `$${Math.abs(usd).toFixed(2)}`;
-    }
-    return `¥${Math.abs(cny).toFixed(0)}`;
+  const formatCurrency = (usd: number) => {
+    return `$${Math.abs(usd).toFixed(2)}`;
   };
 
-  const convertCurrency = (usd: number, cny: number) => {
-    return currency === 'usd' ? Math.abs(usd) : Math.abs(cny);
+  const convertCurrency = (usd: number) => {
+    return Math.abs(usd);
   };
 
   const processCSV = useCallback((text: string, filename: string) => {
@@ -104,57 +93,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen" style={{ background: '#0d0d0f' }}>
-      {/* Sticky Header with Currency Toggle */}
+      {/* Sticky Header */}
       <header className="sticky top-0 z-50 backdrop-blur-md" style={{ background: 'rgba(13, 13, 15, 0.8)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
         <div className="container max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img src={LOGO} alt="Yuan" className="w-6 h-6 rounded-full" />
             <span className="text-sm font-semibold text-white/60">China Wrapped</span>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowUpload(!showUpload)}
-              className="p-2 rounded-full hover:bg-white/10 text-white/60 transition-colors"
-              title="Upload CSV"
-            >
-              <UploadIcon className="w-5 h-5" />
-            </button>
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full hover:bg-white/10 text-white/60 transition-colors"
-              title="Toggle Theme"
-            >
-              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
-            <div className="flex bg-white/10 rounded-full p-1 ml-2">
-              <button
-                onClick={() => setCurrency('usd')}
-                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${currency === 'usd' ? 'bg-white text-black shadow-lg' : 'text-white/40 hover:text-white/70'}`}
-              >
-                USD
-              </button>
-              <button
-                onClick={() => setCurrency('cny')}
-                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${currency === 'cny' ? 'bg-white text-black shadow-lg' : 'text-white/40 hover:text-white/70'}`}
-              >
-                CNY
-              </button>
-            </div>
-          </div>
         </div>
-        {showUpload && (
-          <div className="container max-w-3xl mx-auto px-4 pb-4 animate-in slide-in-from-top duration-300">
-            <CSVUpload 
-              onLoad={(text, name) => {
-                processCSV(text, name);
-                setShowUpload(false);
-              }}
-              filename={csvFilename}
-              status={loadStatus}
-              transactionCount={stats?.transactionCount}
-            />
-          </div>
-        )}
       </header>
       {/* ── HERO ── */}
       <header
@@ -661,7 +607,7 @@ export default function Home() {
             </WrappedCard>
 
             {/* ── CARD 14: Daily Log Table ── */}
-            <DailyLogCard stats={stats} currency={currency} />
+            <DailyLogCard stats={stats} />
 
             {/* ── CARD 15: Accommodation Daily ── */}
             {accommodations.length > 0 && (
@@ -853,7 +799,7 @@ function CityRouteCard({ stats }: { stats: TripStats }) {
 }
 
 // Daily log expandable card
-function DailyLogCard({ stats, currency }: { stats: TripStats; currency: 'cny' | 'usd' }) {
+function DailyLogCard({ stats }: { stats: TripStats }) {
   const { ref, visible } = useScrollReveal();
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -888,7 +834,7 @@ function DailyLogCard({ stats, currency }: { stats: TripStats; currency: 'cny' |
                   <CategoryPill label={day.topCategory} color={getCategoryColor(day.topCategory)} size="sm" />
                 </div>
                 <span className="mono text-sm sm:text-base font-bold text-white whitespace-nowrap">
-                  {currency === 'usd' ? `$${day.total.toFixed(2)}` : `¥${day.cnyTotal.toFixed(0)}`}
+                  ${day.total.toFixed(2)}
                 </span>
                 <ArrowRight className={`w-4 h-4 text-white/30 transition-transform flex-shrink-0 ${expanded === day.date ? 'rotate-90' : ''}`} />
               </div>
@@ -901,7 +847,7 @@ function DailyLogCard({ stats, currency }: { stats: TripStats; currency: 'cny' |
                       <span className="text-sm text-white/80">{t.merchant}</span>
                       <span className="text-xs text-white/30 ml-2">{t.category}</span>
                     </div>
-                    <span className="mono text-sm text-white/60">{currency === "usd" ? `$${Math.abs(t.usd).toFixed(2)}` : `¥${Math.abs(t.cny).toFixed(0)}`}</span>
+                    <span className="mono text-sm text-white/60">${Math.abs(t.usd).toFixed(2)}</span>
                   </div>
                 ))}
               </div>

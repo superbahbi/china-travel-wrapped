@@ -645,8 +645,7 @@ export default function Home() {
             <div className="text-center py-8 text-white/30 text-sm">
               <div className="text-2xl mb-2">元</div>
               <div>China Overland · {stats.dateRange.start} → {stats.dateRange.end}</div>
-              <div className="text-xs mt-1 text-white/20">Drop a new transactions.csv to update</div>
-            </div>
+              </div>
           </>
         )}
       </main>

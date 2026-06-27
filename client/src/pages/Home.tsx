@@ -161,7 +161,7 @@ export default function Home() {
 
 
 
-        {!stats && loadStatus === 'idle' && (
+        {!stats && (
           <div className="text-center py-20 text-white/30">
             <DollarSign className="w-12 h-12 mx-auto mb-4 opacity-30" />
             <p className="text-lg">Loading travel data...</p>
@@ -176,7 +176,7 @@ export default function Home() {
                 <div className="text-sm font-semibold tracking-widest uppercase opacity-70 mb-2">They've spent</div>
                 <div className="flex items-end gap-3 mb-1">
                   <div className="text-7xl sm:text-8xl font-bold text-white" style={{ fontFamily: 'Syne, sans-serif' }}>
-                    {formatCurrency(stats.grandTotal, stats.grandTotalCNY)}
+                    {formatCurrency(stats.grandTotal)}
                   </div>
                 </div>
                 <div className="text-white/70 text-lg mb-6">

@@ -31,42 +31,21 @@ export default function Home() {
     return Math.abs(usd);
   };
 
-  const processCSV = useCallback((text: string, filename: string) => {
-    console.log('Processing CSV, text length:', text.length);
+  const processCSV = useCallback((text: string) => {
     const txns = parseTransactions(text);
-    console.log('Parsed transactions:', txns.length);
-    if (txns.length === 0) {
-      console.error('No transactions parsed!');
-      setLoadStatus('error');
-      return;
-    }
+    if (txns.length === 0) return;
     const computed = computeTripStats(txns);
-    console.log('Computed stats:', computed);
     setStats(computed);
-    setCsvFilename(filename);
-    setLoadStatus('loaded');
   }, []);
 
-  // Auto-load from GitHub repo
   const refreshFromGitHub = useCallback(() => {
-    setLoadStatus('idle');
     const url = TRANSACTIONS_CSV_URL + '?t=' + Date.now();
-    console.log('Fetching CSV from:', url);
     fetch(url)
-      .then(r => {
-        console.log('CSV fetch response:', r.status, r.ok);
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.text();
-      })
+      .then(r => r.ok ? r.text() : Promise.reject())
       .then(text => {
-        console.log('CSV loaded, size:', text.length);
-        if (!text || text.trim().length === 0) throw new Error('Empty CSV');
-        processCSV(text, 'transactions.csv');
+        if (text && text.trim().length > 0) processCSV(text);
       })
-      .catch(err => {
-        console.error('Failed to load CSV:', err);
-        setLoadStatus('idle');
-      });
+      .catch(() => {});
   }, [processCSV]);
 
   useEffect(() => {

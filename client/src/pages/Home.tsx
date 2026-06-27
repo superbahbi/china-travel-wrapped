@@ -623,18 +623,30 @@ export default function Home() {
                           <div className="text-sm font-medium text-white">{acc.merchant}</div>
                           <div className="text-xs text-white/50">{formatDateFull(acc.date)} · {acc.city}</div>
                         </div>
-                        <div className="text-sm mono font-bold text-white/80">${acc.amountUSD.toFixed(2)}</div>
+                        <div className="text-sm mono font-bold text-white/80">
+                          {formatCurrency(acc.amountUSD, acc.amountCNY)}
+                        </div>
                       </div>
                     ))}
                   </div>
                   <div className="mt-6 pt-4 border-t border-white/20">
                     <div className="flex justify-between text-sm">
                       <span className="text-white/60">Total Accommodations</span>
-                      <span className="font-bold">${accommodations.reduce((s, a) => s + a.amountUSD, 0).toFixed(2)}</span>
+                      <span className="font-bold">
+                        {formatCurrency(
+                          accommodations.reduce((s, a) => s + a.amountUSD, 0),
+                          accommodations.reduce((s, a) => s + a.amountCNY, 0)
+                        )}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm mt-2">
                       <span className="text-white/60">Average per night</span>
-                      <span className="font-bold">${(accommodations.reduce((s, a) => s + a.amountUSD, 0) / accommodations.length).toFixed(2)}</span>
+                      <span className="font-bold">
+                        {formatCurrency(
+                          accommodations.reduce((s, a) => s + a.amountUSD, 0) / accommodations.length,
+                          accommodations.reduce((s, a) => s + a.amountCNY, 0) / accommodations.length
+                        )}
+                      </span>
                     </div>
                   </div>
                 </div>

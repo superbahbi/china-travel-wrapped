@@ -385,19 +385,22 @@ export function parseAccommodations(csv: string): AccommodationEntry[] {
   const headers = parseCSVLine(headerLine);
   const dateIdx = headers.indexOf('Date');
   const merchantIdx = headers.indexOf('Merchant');
-  const cnyIdx = headers.indexOf('CNY');
-  const usdIdx = headers.indexOf('USD');
+  const cnyIdx = headers.indexOf('Amount (CNY)');
   const cityIdx = headers.indexOf('City');
+
+  // USD exchange rate - using a fixed rate for now as it's not in the CSV
+  const USD_RATE = 7.2;
 
   return lines
     .slice(1)
     .map(line => {
       const fields = parseCSVLine(line);
+      const cny = parseFloat((fields[cnyIdx] || '0').trim()) || 0;
       return {
         date: (fields[dateIdx] || '').trim().substring(0, 10), // Extract YYYY-MM-DD
         merchant: (fields[merchantIdx] || '').trim(),
-        amountCNY: parseFloat((fields[cnyIdx] || '0').trim()) || 0,
-        amountUSD: parseFloat((fields[usdIdx] || '0').trim()) || 0,
+        amountCNY: cny,
+        amountUSD: cny / USD_RATE,
         city: (fields[cityIdx] || '').trim(),
       };
     })

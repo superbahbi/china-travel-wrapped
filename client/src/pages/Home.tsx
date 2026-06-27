@@ -363,25 +363,7 @@ export default function Home() {
               </div>
             </WrappedCard>
 
-            {/* ── CARD 5: Journey Map ── */}
-            <WrappedCard gradient="linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%)">
-              <div className="p-8 text-white">
-                <div className="flex items-center gap-2 mb-6">
-                  <MapIcon className="w-5 h-5 text-[#38ef7d]" />
-                  <div className="text-sm font-semibold tracking-widest uppercase opacity-70">Journey Map</div>
-                </div>
-                <div className="rounded-2xl overflow-hidden border border-white/10 h-[300px]">
-                  <MapView 
-                    className="h-full w-full"
-                    initialCenter={{ lat: 22.5431, lng: 114.0579 }} // Starting in Shenzhen
-                    initialZoom={5}
-                  />
-                </div>
-                <div className="mt-4 text-xs text-white/40 text-center italic">
-                  Visualizing your route across China
-                </div>
-              </div>
-            </WrappedCard>
+
 
             {/* ── CARD 6: Your Route Timeline ── */}
             <CityRouteCard stats={stats} />
@@ -889,21 +871,26 @@ function DailyLogCard({ stats, currency }: { stats: TripStats; currency: 'cny' |
         {stats.dayStats.slice().reverse().map((day) => (
           <div key={day.date}>
             <button
-              className="w-full flex items-center justify-between px-6 py-3 hover:bg-white/5 transition-colors text-left"
+              className="w-full flex items-center justify-between px-4 sm:px-6 py-4 hover:bg-white/5 transition-colors text-left"
               onClick={() => setExpanded(expanded === day.date ? null : day.date)}
             >
-              <div className="flex items-center gap-3">
-                <span className="text-white/30 text-xs mono">{formatDateFull(day.date)}</span>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 flex-1 min-w-0 mr-4">
+                <span className="text-white/30 text-[10px] sm:text-xs mono uppercase tracking-wider whitespace-nowrap">{formatDateFull(day.date)}</span>
                 {day.cities.length > 0 && (
-                  <span className="text-xs text-white/50 flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />{day.cities.join(' → ')}
+                  <span className="text-xs text-white/50 flex items-center gap-1 truncate font-medium">
+                    <MapPin className="w-3 h-3 flex-shrink-0" />
+                    <span className="truncate">{day.cities.join(' → ')}</span>
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-3">
-                <CategoryPill label={day.topCategory} color={getCategoryColor(day.topCategory)} size="sm" />
-                <span className="mono text-sm font-bold text-white">${day.total.toFixed(2)}</span>
-                <ArrowRight className={`w-4 h-4 text-white/30 transition-transform ${expanded === day.date ? 'rotate-90' : ''}`} />
+              <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                <div className="hidden xs:block">
+                  <CategoryPill label={day.topCategory} color={getCategoryColor(day.topCategory)} size="sm" />
+                </div>
+                <span className="mono text-sm sm:text-base font-bold text-white whitespace-nowrap">
+                  {currency === 'usd' ? `$${day.total.toFixed(2)}` : `¥${day.cnyTotal.toFixed(0)}`}
+                </span>
+                <ArrowRight className={`w-4 h-4 text-white/30 transition-transform flex-shrink-0 ${expanded === day.date ? 'rotate-90' : ''}`} />
               </div>
             </button>
             {expanded === day.date && (

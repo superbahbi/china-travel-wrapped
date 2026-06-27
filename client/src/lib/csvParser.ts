@@ -18,6 +18,7 @@ export interface Transaction {
 export interface DayStats {
   date: string;
   total: number;
+  cnyTotal: number;
   transactions: Transaction[];
   topCategory: string;
   cities: string[];
@@ -185,6 +186,7 @@ export function computeTripStats(transactions: Transaction[]): TripStats {
   const dayStats: DayStats[] = days.map(date => {
     const txns = byDay[date];
     const total = txns.filter(t => t.usd < 0).reduce((s, t) => s + Math.abs(t.usd), 0);
+    const cnyTotal = txns.filter(t => t.usd < 0).reduce((s, t) => s + Math.abs(t.cny), 0);
     const catTotals: Record<string, number> = {};
     txns.forEach(t => {
       catTotals[t.category] = (catTotals[t.category] || 0) + Math.abs(t.usd);
@@ -192,7 +194,7 @@ export function computeTripStats(transactions: Transaction[]): TripStats {
     const topCategory = Object.entries(catTotals).sort((a, b) => b[1] - a[1])[0]?.[0] || '';
     const citiesSet = new Set(txns.map(t => t.city).filter(c => !isGenericCity(c)));
     const cities = Array.from(citiesSet);
-    return { date, total, transactions: txns, topCategory, cities };
+    return { date, total, cnyTotal, transactions: txns, topCategory, cities };
   });
 
   const catTotals: Record<string, { total: number; count: number }> = {};

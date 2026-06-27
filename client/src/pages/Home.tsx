@@ -3,13 +3,17 @@
 // Style: Gradient Feast (Spotify Wrapped × Chinese Travel)
 // Dark canvas, vivid gradient cards, animated stats
 // ============================================================
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
+import { CSVUpload } from '@/components/CSVUpload';
+import { Sun, Moon, Upload as UploadIcon } from 'lucide-react';
 import { parseTransactions, computeTripStats, TripStats, formatDate, formatDateFull, getCategoryColor, getCityGradient, CATEGORY_COLORS, parseAccommodations, AccommodationEntry } from '@/lib/csvParser';
 import { WrappedCard, StatNumber, CategoryPill, ProgressBar, GlassPanel } from '@/components/WrappedCard';
 
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
-import { MapPin, TrendingUp, Utensils, Hotel, Train, ShoppingBag, Calendar, Zap, Award, DollarSign, ArrowRight, RefreshCw } from 'lucide-react';
+import { MapPin, TrendingUp, Utensils, Hotel, Train, ShoppingBag, Calendar, Zap, Award, DollarSign, ArrowRight, RefreshCw, Map as MapIcon } from 'lucide-react';
+import { MapView } from '@/components/Map';
 
 const HERO_BG = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/hero-bg-ZsqqDYb5LYENCn3sc2jL3g.webp';
 const LOGO = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/logo-yuan-6cy4BnEm6t85zTyUz2wrCC.webp';
@@ -24,10 +28,14 @@ export default function Home() {
   const [loadStatus, setLoadStatus] = useState<'idle' | 'loaded' | 'error'>('idle');
   const [autoLoaded, setAutoLoaded] = useState(false);
   const [currency, setCurrency] = useState<'cny' | 'usd'>('usd');
+  const { theme, toggleTheme } = useTheme();
+  const [showUpload, setShowUpload] = useState(false);
 
-  const formatCurrency = (usd: number, cny: number, showBoth = false) => {
-    const absUsd = Math.abs(usd);
-    return `$${absUsd.toFixed(2)}`;
+  const formatCurrency = (usd: number, cny: number) => {
+    if (currency === 'usd') {
+      return `$${Math.abs(usd).toFixed(2)}`;
+    }
+    return `¥${Math.abs(cny).toFixed(0)}`;
   };
 
   const convertCurrency = (usd: number, cny: number) => {
@@ -103,8 +111,50 @@ export default function Home() {
             <img src={LOGO} alt="Yuan" className="w-6 h-6 rounded-full" />
             <span className="text-sm font-semibold text-white/60">China Wrapped</span>
           </div>
-
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowUpload(!showUpload)}
+              className="p-2 rounded-full hover:bg-white/10 text-white/60 transition-colors"
+              title="Upload CSV"
+            >
+              <UploadIcon className="w-5 h-5" />
+            </button>
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-full hover:bg-white/10 text-white/60 transition-colors"
+              title="Toggle Theme"
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+            <div className="flex bg-white/10 rounded-full p-1 ml-2">
+              <button
+                onClick={() => setCurrency('usd')}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${currency === 'usd' ? 'bg-white text-black shadow-lg' : 'text-white/40 hover:text-white/70'}`}
+              >
+                USD
+              </button>
+              <button
+                onClick={() => setCurrency('cny')}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${currency === 'cny' ? 'bg-white text-black shadow-lg' : 'text-white/40 hover:text-white/70'}`}
+              >
+                CNY
+              </button>
+            </div>
+          </div>
         </div>
+        {showUpload && (
+          <div className="container max-w-3xl mx-auto px-4 pb-4 animate-in slide-in-from-top duration-300">
+            <CSVUpload 
+              onLoad={(text, name) => {
+                processCSV(text, name);
+                setShowUpload(false);
+              }}
+              filename={csvFilename}
+              status={loadStatus}
+              transactionCount={stats?.transactionCount}
+            />
+          </div>
+        )}
       </header>
       {/* ── HERO ── */}
       <header
@@ -312,6 +362,29 @@ export default function Home() {
                 </div>
               </div>
             </WrappedCard>
+
+            {/* ── CARD 5: Journey Map ── */}
+            <WrappedCard gradient="linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%)">
+              <div className="p-8 text-white">
+                <div className="flex items-center gap-2 mb-6">
+                  <MapIcon className="w-5 h-5 text-[#38ef7d]" />
+                  <div className="text-sm font-semibold tracking-widest uppercase opacity-70">Journey Map</div>
+                </div>
+                <div className="rounded-2xl overflow-hidden border border-white/10 h-[300px]">
+                  <MapView 
+                    className="h-full w-full"
+                    initialCenter={{ lat: 22.5431, lng: 114.0579 }} // Starting in Shenzhen
+                    initialZoom={5}
+                  />
+                </div>
+                <div className="mt-4 text-xs text-white/40 text-center italic">
+                  Visualizing your route across China
+                </div>
+              </div>
+            </WrappedCard>
+
+            {/* ── CARD 6: Your Route Timeline ── */}
+            <CityRouteCard stats={stats} />
 
             {/* ── CARD 5: Cities ── */}
             <WrappedCard gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)">

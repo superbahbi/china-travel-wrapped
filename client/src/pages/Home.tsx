@@ -192,7 +192,7 @@ export default function Home() {
                     <div className="text-xs opacity-70 mt-1">transactions</div>
                   </GlassPanel>
                   <GlassPanel>
-                    <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>{currency === 'usd' ? '$' : '¥'}{stats.avgTransactionSize.toFixed(0)}</div>
+                    <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>${stats.avgTransactionSize.toFixed(0)}</div>
                     <div className="text-xs opacity-70 mt-1">avg per txn</div>
                   </GlassPanel>
                 </div>
@@ -207,7 +207,7 @@ export default function Home() {
                   <div className="text-sm font-semibold tracking-widest uppercase opacity-70">Daily Burn Rate</div>
                 </div>
                 <div className="text-3xl font-bold mb-1" style={{ fontFamily: 'Syne, sans-serif' }}>
-                  {currency === 'usd' ? '$' : '¥'}{stats.mostExpensiveDay?.total.toFixed(0)} peak
+                  ${stats.mostExpensiveDay?.total.toFixed(0)} peak
                 </div>
                 <div className="text-white/50 text-sm mb-6">
                   on {formatDate(stats.mostExpensiveDay?.date || '')} · their biggest spending day
@@ -224,13 +224,13 @@ export default function Home() {
                     <YAxis hide />
                     <Tooltip
                       contentStyle={{ background: 'rgba(13,13,15,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, color: '#fff' }}
-                      formatter={(v: number) => [`${currency === 'usd' ? '$' : '¥'}${v.toFixed(2)}`, 'Spent']}
+                      formatter={(v: number) => [`$${v.toFixed(2)}`, 'Spent']}
                     />
                     <Area type="monotone" dataKey="total" stroke="#FF6B6B" strokeWidth={2.5} fill="url(#burnGrad)" dot={{ fill: '#FF6B6B', r: 3, strokeWidth: 0 }} />
                   </AreaChart>
                 </ResponsiveContainer>
                 <div className="flex items-center justify-between mt-4 text-sm">
-                  <span className="text-white/50">Lightest day: <span className="text-white font-semibold">{currency === 'usd' ? '$' : '¥'}{stats.cheapestDay?.total.toFixed(2)}</span> on {formatDate(stats.cheapestDay?.date || '')}</span>
+                  <span className="text-white/50">Lightest day: <span className="text-white font-semibold">${stats.cheapestDay?.total.toFixed(2)}</span> on {formatDate(stats.cheapestDay?.date || '')}</span>
                 </div>
               </div>
             </WrappedCard>
@@ -243,14 +243,14 @@ export default function Home() {
                   {stats.topCategory?.category}
                 </div>
                 <div className="text-white/70 text-lg mb-6">
-                  <span className="font-bold text-white">{currency === 'usd' ? '$' : '¥'}{stats.topCategory?.total.toFixed(0)}</span> — {stats.topCategory?.percentage.toFixed(0)}% of their total budget
+                  <span className="font-bold text-white">${stats.topCategory?.total.toFixed(0)}</span> — {stats.topCategory?.percentage.toFixed(0)}% of their total budget
                 </div>
                 <div className="space-y-3">
                   {stats.categoryStats.slice(0, 6).map((cat) => (
                     <div key={cat.category}>
                       <div className="flex justify-between text-sm mb-1">
                         <span className="font-medium">{cat.category}</span>
-                        <span className="mono text-white/70">{currency === 'usd' ? '$' : '¥'}{cat.total.toFixed(0)}</span>
+                        <span className="mono text-white/70">${cat.total.toFixed(0)}</span>
                       </div>
                       <ProgressBar
                         value={cat.percentage}
@@ -290,7 +290,7 @@ export default function Home() {
                       </Pie>
                       <Tooltip
                         contentStyle={{ background: 'rgba(13,13,15,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, color: '#fff' }}
-                        formatter={(v: number) => [`${currency === 'usd' ? '$' : '¥'}${v.toFixed(2)}`, '']}
+                        formatter={(v: number) => [`$${v.toFixed(2)}`, '']}
                       />
                     </PieChart>
                   </div>
@@ -333,7 +333,7 @@ export default function Home() {
                         <div className="flex-1">
                           <div className="flex justify-between mb-1">
                             <span className="font-semibold text-sm">{city.city}</span>
-                            <span className="mono text-sm text-white/70">{currency === 'usd' ? '$' : '¥'}{city.total.toFixed(0)}</span>
+                            <span className="mono text-sm text-white/70">${city.total.toFixed(0)}</span>
                           </div>
                           <ProgressBar
                             value={(city.total / maxTotal) * 100}
@@ -341,7 +341,7 @@ export default function Home() {
                             active
                             height={5}
                           />
-                          <div className="text-xs text-white/50 mt-1">{city.days} days · {currency === 'usd' ? '$' : '¥'}{city.avgPerDay.toFixed(0)}/day</div>
+                          <div className="text-xs text-white/50 mt-1">{city.days} days · ${city.avgPerDay.toFixed(0)}/day</div>
                         </div>
                       </div>
                     );
@@ -358,10 +358,10 @@ export default function Home() {
                   <div className="text-sm font-semibold tracking-widest uppercase opacity-70">They ate well</div>
                 </div>
                 <div className="text-7xl font-bold mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
-                  {currency === 'usd' ? '$' : '¥'}{stats.foodTotal.toFixed(0)}
+                  ${stats.foodTotal.toFixed(0)}
                 </div>
                 <div className="text-white/70 text-lg mb-6">
-                  spent on food — that's <span className="font-bold text-white">{currency === 'usd' ? '$' : '¥'}{(stats.foodTotal / stats.daysTracked).toFixed(2)}/day</span> on average
+                  spent on food — that's <span className="font-bold text-white">${(stats.foodTotal / stats.daysTracked).toFixed(2)}/day</span> on average
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <GlassPanel>
@@ -372,7 +372,7 @@ export default function Home() {
                   </GlassPanel>
                   <GlassPanel>
                     <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>
-                      {currency === 'usd' ? '$' : '¥'}{stats.categoryStats.find(c => c.category === 'Food')
+                      ${stats.categoryStats.find(c => c.category === 'Food')
                         ? (stats.foodTotal / (stats.categoryStats.find(c => c.category === 'Food')?.count || 1)).toFixed(1)
                         : '0'}
                     </div>
@@ -390,7 +390,7 @@ export default function Home() {
                   <div className="text-sm font-semibold tracking-widest uppercase opacity-70">Beds & Hostels</div>
                 </div>
                 <div className="text-7xl font-bold mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
-                  {currency === 'usd' ? '$' : '¥'}{stats.accommodationTotal.toFixed(0)}
+                  ${stats.accommodationTotal.toFixed(0)}
                 </div>
                 <div className="text-white/70 text-lg mb-6">
                   on accommodation · <span className="font-bold text-white">{stats.categoryStats.find(c => c.category === 'Accommodation')?.count || 0} stays</span>
@@ -406,7 +406,7 @@ export default function Home() {
                           <div className="text-sm font-semibold">{t.merchant}</div>
                           <div className="text-xs text-white/50">{t.city} · {formatDate(t.date)}</div>
                         </div>
-                        <div className="mono text-sm font-bold">{currency === "usd" ? `$${Math.abs(t.usd).toFixed(2)}` : `¥${Math.abs(t.cny).toFixed(0)}`}</div>
+                        <div className="mono text-sm font-bold">${Math.abs(t.usd).toFixed(2)}</div>
                       </div>
                     ))}
                 </div>
@@ -421,7 +421,7 @@ export default function Home() {
                   <div className="text-sm font-semibold tracking-widest uppercase opacity-70">Getting Around</div>
                 </div>
                 <div className="text-7xl font-bold mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
-                  {currency === 'usd' ? '$' : '¥'}{stats.transportTotal.toFixed(0)}
+                  ${stats.transportTotal.toFixed(0)}
                 </div>
                 <div className="text-white/70 text-lg mb-6">
                   on transport — trains, metros, bikes
@@ -429,13 +429,13 @@ export default function Home() {
                 <div className="grid grid-cols-2 gap-3">
                   <GlassPanel>
                     <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>
-                      {currency === 'usd' ? '$' : '¥'}{(stats.categoryStats.find(c => c.category === 'Intercity Transport')?.total || 0).toFixed(0)}
+                      ${(stats.categoryStats.find(c => c.category === 'Intercity Transport')?.total || 0).toFixed(0)}
                     </div>
                     <div className="text-xs opacity-70 mt-1">intercity trains</div>
                   </GlassPanel>
                   <GlassPanel>
                     <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>
-                      {currency === 'usd' ? '$' : '¥'}{(stats.categoryStats.find(c => c.category === 'Transport')?.total || 0).toFixed(0)}
+                      ${(stats.categoryStats.find(c => c.category === 'Transport')?.total || 0).toFixed(0)}
                     </div>
                     <div className="text-xs opacity-70 mt-1">local transport</div>
                   </GlassPanel>
@@ -452,7 +452,7 @@ export default function Home() {
                     <div className="text-sm font-semibold tracking-widest uppercase opacity-70">Biggest splurge</div>
                   </div>
                   <div className="text-7xl font-bold mb-2" style={{ fontFamily: 'Syne, sans-serif', color: '#1a1a1a' }}>
-                    {currency === 'usd' ? '$' : '¥'}{Math.abs(stats.biggestPurchase.usd).toFixed(0)}
+                    ${Math.abs(stats.biggestPurchase.usd).toFixed(0)}
                   </div>
                   <div className="text-black/60 text-lg mb-4">
                     <span className="font-bold text-black">{stats.biggestPurchase.merchant}</span>
@@ -478,7 +478,7 @@ export default function Home() {
                     {stats.topMerchant.name}
                   </div>
                   <div className="text-white/70 text-lg mb-6">
-                    They went back <span className="font-bold text-white">{stats.topMerchant.count} times</span> — spending {currency === 'usd' ? '$' : '¥'}{stats.topMerchant.total.toFixed(2)} total
+                    They went back <span className="font-bold text-white">{stats.topMerchant.count} times</span> — spending ${stats.topMerchant.total.toFixed(2)} total
                   </div>
                 </div>
               </WrappedCard>
@@ -501,7 +501,7 @@ export default function Home() {
                     <YAxis hide />
                     <Tooltip
                       contentStyle={{ background: 'rgba(13,13,15,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, color: '#fff' }}
-                      formatter={(v: number) => [`${currency === 'usd' ? '$' : '¥'}${v.toFixed(2)}`, 'Total']}
+                      formatter={(v: number) => [`$${v.toFixed(2)}`, 'Total']}
                     />
                     <Bar dataKey="total" radius={[6, 6, 0, 0]}>
                       {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((d, i) => (
@@ -522,7 +522,7 @@ export default function Home() {
                     <div className="text-sm font-semibold tracking-widest uppercase opacity-70">Adventures</div>
                   </div>
                   <div className="text-7xl font-bold mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
-                    {currency === 'usd' ? '$' : '¥'}{(stats.categoryStats.find(c => c.category === 'Activities')?.total || 0).toFixed(0)}
+                    ${(stats.categoryStats.find(c => c.category === 'Activities')?.total || 0).toFixed(0)}
                   </div>
                   <div className="text-white/70 text-lg mb-6">
                     on activities · <span className="font-bold text-white">{stats.categoryStats.find(c => c.category === 'Activities')?.count || 0} experiences</span>
@@ -538,7 +538,7 @@ export default function Home() {
                             <div className="text-sm font-semibold">{t.merchant}</div>
                             <div className="text-xs text-white/50">{t.city} · {formatDate(t.date)}</div>
                           </div>
-                          <div className="mono text-sm font-bold">{currency === 'usd' ? '$' : '¥'}{Math.abs(t.usd).toFixed(2)}</div>
+                          <div className="mono text-sm font-bold">${Math.abs(t.usd).toFixed(2)}</div>
                         </div>
                       ))}
                   </div>
@@ -561,7 +561,7 @@ export default function Home() {
               <HighlightMiniCard
                 gradient="linear-gradient(135deg, #f7971e 0%, #ffd200 100%)"
                 label="Trip-wide"
-                value={`${currency === 'usd' ? '$' : '¥'}${stats.tripWideTotal.toFixed(0)}`}
+                value={`$$${stats.tripWideTotal.toFixed(0)}`}
                 sub="SIM, VPN, rail"
                 delay={100}
                 dark
@@ -569,7 +569,7 @@ export default function Home() {
               <HighlightMiniCard
                 gradient="linear-gradient(135deg, #8360c3 0%, #2ebf91 100%)"
                 label="Cheapest Day"
-                value={`${currency === 'usd' ? '$' : '¥'}${stats.cheapestDay?.total.toFixed(2)}`}
+                value={`$$${stats.cheapestDay?.total.toFixed(2)}`}
                 sub={formatDate(stats.cheapestDay?.date || '')}
                 delay={200}
               />
@@ -596,7 +596,7 @@ export default function Home() {
                         <div key={method}>
                           <div className="flex justify-between text-sm mb-1">
                             <span className="font-medium">{method}</span>
-                            <span className="mono text-white/60">{currency === 'usd' ? '$' : '¥'}{amount.toFixed(0)} · {pct.toFixed(0)}%</span>
+                            <span className="mono text-white/60">${amount.toFixed(0)} · {pct.toFixed(0)}%</span>
                           </div>
                           <ProgressBar value={pct} color="#8360c3" active height={5} />
                         </div>

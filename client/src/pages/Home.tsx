@@ -763,7 +763,7 @@ function CityRouteCard({ stats }: { stats: TripStats }) {
     >
       <div className="text-sm font-semibold tracking-widest uppercase text-white/50 mb-2">Your Route</div>
       <div className="text-3xl font-bold mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>
-        {stats.cityStats.map(c => c.city).join(' → ')}
+        {cityJourney.map(c => c.city).join(' → ')}
       </div>
       <div className="flex flex-wrap gap-3">
         {cityJourney.filter(c => c.city !== 'Trip-wide').map((stop, i) => (

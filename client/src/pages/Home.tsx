@@ -7,6 +7,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { parseTransactions, computeTripStats, TripStats, formatDate, formatDateFull, getCategoryColor, getCityGradient, getCityEmoji, CATEGORY_COLORS, parseAccommodations, generateFunFacts, AccommodationEntry } from '@/lib/csvParser';
 import { WrappedCard, StatNumber, CategoryPill, ProgressBar, GlassPanel } from '@/components/WrappedCard';
 import { DailyTimelineCard } from '@/components/DailyTimeline';
+import { AchievementsCard } from '@/components/Achievements';
+import { getAchievements } from '@/lib/achievements';
 
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
@@ -690,7 +692,10 @@ export default function Home() {
             {/* ── CARD 15: Daily Timeline ── */}
             <DailyTimelineCard stats={stats} />
 
-            {/* ── CARD 15: Accommodation Daily ── */}
+            {/* ── CARD 16: Travel Achievements ── */}
+            {stats && <AchievementsCard achievements={getAchievements(stats.transactions, stats)} />}
+
+            {/* ── CARD 17: Accommodation Daily ── */}
             {accommodations.length > 0 && (
               <WrappedCard gradient="linear-gradient(135deg, #8360c3 0%, #2ebf91 100%)">
                 <div className="p-8 text-white">

@@ -47,7 +47,6 @@ Vertical scroll of full-width "Wrapped cards" — each section is a tall card (m
 - Scroll-triggered entrance animations (IntersectionObserver)
 - Number counters animate from 0 to final value when card enters viewport
 - Hover on city cards reveals per-day breakdown
-- CSV upload with drag-and-drop, glowing border on drag
 
 ### Animation
 - Cards: `translateY(40px) opacity(0)` → `translateY(0) opacity(1)`, 600ms ease-out, staggered 100ms

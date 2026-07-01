@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { parseTransactions, computeTripStats, TripStats, formatDate, formatDateFull, getCategoryColor, getCityGradient, getCityEmoji, CATEGORY_COLORS, parseAccommodations, generateFunFacts, AccommodationEntry } from '@/lib/csvParser';
 import { WrappedCard, StatNumber, CategoryPill, ProgressBar, GlassPanel } from '@/components/WrappedCard';
+import { DailyTimelineCard } from '@/components/DailyTimeline';
 
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
@@ -686,8 +687,8 @@ export default function Home() {
               </div>
             </WrappedCard>
 
-            {/* ── CARD 15: Daily Log Table ── */}
-            <DailyLogCard stats={stats} currency={currency} />
+            {/* ── CARD 15: Daily Timeline ── */}
+            <DailyTimelineCard stats={stats} />
 
             {/* ── CARD 15: Accommodation Daily ── */}
             {accommodations.length > 0 && (

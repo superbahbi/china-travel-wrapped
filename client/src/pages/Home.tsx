@@ -391,6 +391,16 @@ export default function Home() {
               </div>
             </WrappedCard>
 
+            {/* ── CARD 5.6: Mixue Visits ── */}
+            <WrappedCard gradient="linear-gradient(135deg, #f953c6 0%, #ff6b9d 100%)">
+              <div className="p-8 text-white">
+                <div className="text-sm font-semibold tracking-widest uppercase opacity-70 mb-4">Mixue Obsession</div>
+                <div className="text-7xl font-bold mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>8</div>
+                <div className="text-white/70 text-lg">times at Mixue</div>
+                <p className="text-sm text-white/60 mt-4">You really loved that bubble tea! 🍹</p>
+              </div>
+            </WrappedCard>
+
             {/* ── CARD 6: Food Stats ── */}
             <WrappedCard gradient="linear-gradient(135deg, #FF6B6B 0%, #b91d73 100%)">
               <div className="p-8 text-white">

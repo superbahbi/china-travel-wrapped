@@ -4,13 +4,12 @@
 // Dark canvas, vivid gradient cards, animated stats
 // ============================================================
 import { useState, useEffect, useCallback } from 'react';
-import { parseTransactions, computeTripStats, TripStats, formatDate, formatDateFull, getCategoryColor, getCityGradient, CATEGORY_COLORS, parseAccommodations, AccommodationEntry } from '@/lib/csvParser';
+import { parseTransactions, computeTripStats, TripStats, formatDate, formatDateFull, getCategoryColor, getCityGradient, getCityEmoji, CATEGORY_COLORS, parseAccommodations, generateFunFacts, AccommodationEntry } from '@/lib/csvParser';
 import { WrappedCard, StatNumber, CategoryPill, ProgressBar, GlassPanel } from '@/components/WrappedCard';
 
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
-import { MapPin, TrendingUp, Utensils, Hotel, Train, ShoppingBag, Calendar, Zap, Award, DollarSign, ArrowRight, RefreshCw, Map as MapIcon } from 'lucide-react';
-import { MapView } from '@/components/Map';
+import { MapPin, TrendingUp, Utensils, Hotel, Train, ShoppingBag, Calendar, Zap, Award, DollarSign, ArrowRight, RefreshCw, Target, TrendingDown } from 'lucide-react';
 
 const HERO_BG = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/hero-bg-ZsqqDYb5LYENCn3sc2jL3g.webp';
 const LOGO = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/logo-yuan-6cy4BnEm6t85zTyUz2wrCC.webp';
@@ -21,31 +20,56 @@ const TRANSACTIONS_CSV_URL = '/data/transactions.csv';
 export default function Home() {
   const [stats, setStats] = useState<TripStats | null>(null);
   const [accommodations, setAccommodations] = useState<AccommodationEntry[]>([]);
+  const [csvFilename, setCsvFilename] = useState<string>('');
+  const [loadStatus, setLoadStatus] = useState<'idle' | 'loaded' | 'error'>('idle');
   const [autoLoaded, setAutoLoaded] = useState(false);
+  const [currency, setCurrency] = useState<'cny' | 'usd'>('usd');
 
-  const formatCurrency = (usd: number) => {
-    return `$${Math.abs(usd).toFixed(2)}`;
+  const formatCurrency = (usd: number, cny: number, showBoth = false) => {
+    const absUsd = Math.abs(usd);
+    return `$${absUsd.toFixed(2)}`;
   };
 
-  const convertCurrency = (usd: number) => {
-    return Math.abs(usd);
+  const convertCurrency = (usd: number, cny: number) => {
+    return currency === 'usd' ? Math.abs(usd) : Math.abs(cny);
   };
 
-  const processCSV = useCallback((text: string) => {
+  const processCSV = useCallback((text: string, filename: string) => {
+    console.log('Processing CSV, text length:', text.length);
     const txns = parseTransactions(text);
-    if (txns.length === 0) return;
+    console.log('Parsed transactions:', txns.length);
+    if (txns.length === 0) {
+      console.error('No transactions parsed!');
+      setLoadStatus('error');
+      return;
+    }
     const computed = computeTripStats(txns);
+    console.log('Computed stats:', computed);
     setStats(computed);
+    setCsvFilename(filename);
+    setLoadStatus('loaded');
   }, []);
 
+  // Auto-load from GitHub repo
   const refreshFromGitHub = useCallback(() => {
+    setLoadStatus('idle');
     const url = TRANSACTIONS_CSV_URL + '?t=' + Date.now();
+    console.log('Fetching CSV from:', url);
     fetch(url)
-      .then(r => r.ok ? r.text() : Promise.reject())
-      .then(text => {
-        if (text && text.trim().length > 0) processCSV(text);
+      .then(r => {
+        console.log('CSV fetch response:', r.status, r.ok);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
       })
-      .catch(() => {});
+      .then(text => {
+        console.log('CSV loaded, size:', text.length);
+        if (!text || text.trim().length === 0) throw new Error('Empty CSV');
+        processCSV(text, 'transactions.csv');
+      })
+      .catch(err => {
+        console.error('Failed to load CSV:', err);
+        setLoadStatus('idle');
+      });
   }, [processCSV]);
 
   useEffect(() => {
@@ -72,13 +96,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen" style={{ background: '#0d0d0f' }}>
-      {/* Sticky Header */}
+      {/* Sticky Header with Currency Toggle */}
       <header className="sticky top-0 z-50 backdrop-blur-md" style={{ background: 'rgba(13, 13, 15, 0.8)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
         <div className="container max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img src={LOGO} alt="Yuan" className="w-6 h-6 rounded-full" />
             <span className="text-sm font-semibold text-white/60">China Wrapped</span>
           </div>
+
         </div>
       </header>
       {/* ── HERO ── */}
@@ -140,7 +165,7 @@ export default function Home() {
 
 
 
-        {!stats && (
+        {!stats && loadStatus === 'idle' && (
           <div className="text-center py-20 text-white/30">
             <DollarSign className="w-12 h-12 mx-auto mb-4 opacity-30" />
             <p className="text-lg">Loading travel data...</p>
@@ -155,7 +180,7 @@ export default function Home() {
                 <div className="text-sm font-semibold tracking-widest uppercase opacity-70 mb-2">They've spent</div>
                 <div className="flex items-end gap-3 mb-1">
                   <div className="text-7xl sm:text-8xl font-bold text-white" style={{ fontFamily: 'Syne, sans-serif' }}>
-                    {formatCurrency(stats.grandTotal)}
+                    {formatCurrency(stats.grandTotal, stats.grandTotalCNY)}
                   </div>
                 </div>
                 <div className="text-white/70 text-lg mb-6">
@@ -171,8 +196,8 @@ export default function Home() {
                     <div className="text-xs opacity-70 mt-1">transactions</div>
                   </GlassPanel>
                   <GlassPanel>
-                    <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>${stats.avgTransactionSize.toFixed(0)}</div>
-                    <div className="text-xs opacity-70 mt-1">avg/txn</div>
+                    <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>{currency === 'usd' ? '$' : '¥'}{stats.avgTransactionSize.toFixed(0)}</div>
+                    <div className="text-xs opacity-70 mt-1">avg per txn</div>
                   </GlassPanel>
                 </div>
               </div>
@@ -186,7 +211,7 @@ export default function Home() {
                   <div className="text-sm font-semibold tracking-widest uppercase opacity-70">Daily Burn Rate</div>
                 </div>
                 <div className="text-3xl font-bold mb-1" style={{ fontFamily: 'Syne, sans-serif' }}>
-                  ${stats.mostExpensiveDay?.total.toFixed(0)} peak
+                  {currency === 'usd' ? '$' : '¥'}{stats.mostExpensiveDay?.total.toFixed(0)} peak
                 </div>
                 <div className="text-white/50 text-sm mb-6">
                   on {formatDate(stats.mostExpensiveDay?.date || '')} · their biggest spending day
@@ -203,13 +228,13 @@ export default function Home() {
                     <YAxis hide />
                     <Tooltip
                       contentStyle={{ background: 'rgba(13,13,15,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, color: '#fff' }}
-                      formatter={(v: number) => [`$${v.toFixed(2)}`, 'Spent']}
+                      formatter={(v: number) => [`${currency === 'usd' ? '$' : '¥'}${v.toFixed(2)}`, 'Spent']}
                     />
                     <Area type="monotone" dataKey="total" stroke="#FF6B6B" strokeWidth={2.5} fill="url(#burnGrad)" dot={{ fill: '#FF6B6B', r: 3, strokeWidth: 0 }} />
                   </AreaChart>
                 </ResponsiveContainer>
                 <div className="flex items-center justify-between mt-4 text-sm">
-                  <span className="text-white/50">Lightest day: <span className="text-white font-semibold">${stats.cheapestDay?.total.toFixed(2)}</span> on {formatDate(stats.cheapestDay?.date || '')}</span>
+                  <span className="text-white/50">Lightest day: <span className="text-white font-semibold">{currency === 'usd' ? '$' : '¥'}{stats.cheapestDay?.total.toFixed(2)}</span> on {formatDate(stats.cheapestDay?.date || '')}</span>
                 </div>
               </div>
             </WrappedCard>
@@ -222,14 +247,14 @@ export default function Home() {
                   {stats.topCategory?.category}
                 </div>
                 <div className="text-white/70 text-lg mb-6">
-                  <span className="font-bold text-white">${stats.topCategory?.total.toFixed(0)}</span> — {stats.topCategory?.percentage.toFixed(0)}% of their total budget
+                  <span className="font-bold text-white">{currency === 'usd' ? '$' : '¥'}{stats.topCategory?.total.toFixed(0)}</span> — {stats.topCategory?.percentage.toFixed(0)}% of their total budget
                 </div>
                 <div className="space-y-3">
                   {stats.categoryStats.slice(0, 6).map((cat) => (
                     <div key={cat.category}>
                       <div className="flex justify-between text-sm mb-1">
                         <span className="font-medium">{cat.category}</span>
-                        <span className="mono text-white/70">${cat.total.toFixed(0)}</span>
+                        <span className="mono text-white/70">{currency === 'usd' ? '$' : '¥'}{cat.total.toFixed(0)}</span>
                       </div>
                       <ProgressBar
                         value={cat.percentage}
@@ -269,7 +294,7 @@ export default function Home() {
                       </Pie>
                       <Tooltip
                         contentStyle={{ background: 'rgba(13,13,15,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, color: '#fff' }}
-                        formatter={(v: number) => [`$${v.toFixed(2)}`, '']}
+                        formatter={(v: number) => [`${currency === 'usd' ? '$' : '¥'}${v.toFixed(2)}`, '']}
                       />
                     </PieChart>
                   </div>
@@ -287,11 +312,6 @@ export default function Home() {
                 </div>
               </div>
             </WrappedCard>
-
-
-
-            {/* ── CARD 6: Your Route Timeline ── */}
-            <CityRouteCard stats={stats} />
 
             {/* ── CARD 5: Cities ── */}
             <WrappedCard gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)">
@@ -312,7 +332,7 @@ export default function Home() {
                         <div className="flex-1">
                           <div className="flex justify-between mb-1">
                             <span className="font-semibold text-sm">{city.city}</span>
-                            <span className="mono text-sm text-white/70">${city.total.toFixed(0)}</span>
+                            <span className="mono text-sm text-white/70">{currency === 'usd' ? '$' : '¥'}{city.total.toFixed(0)}</span>
                           </div>
                           <ProgressBar
                             value={(city.total / maxTotal) * 100}
@@ -320,11 +340,53 @@ export default function Home() {
                             active
                             height={5}
                           />
-                          <div className="text-xs text-white/50 mt-1">{city.days} days · ${city.avgPerDay.toFixed(0)}/day</div>
+                          <div className="text-xs text-white/50 mt-1">{city.days} days · {currency === 'usd' ? '$' : '¥'}{city.avgPerDay.toFixed(0)}/day</div>
                         </div>
                       </div>
                     );
                   })}
+                </div>
+              </div>
+            </WrappedCard>
+
+
+            {/* ── CARD 5.5: Budget Comparison ── */}
+            <WrappedCard gradient="linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%)">
+              <div className="p-8 text-white">
+                <div className="flex items-center gap-2 mb-6">
+                  <Target className="w-5 h-5 text-white/70" />
+                  <div className="text-sm font-semibold tracking-widest uppercase opacity-70">Budget Reality Check</div>
+                </div>
+                <div className="space-y-6">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-white/70">Ideal Daily Budget</span>
+                      <span className="font-bold text-lg">$20</span>
+                    </div>
+                    <ProgressBar value={100} color="rgba(255,255,255,0.3)" active height={6} />
+                  </div>
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-white/70">Actual Daily Average</span>
+                      <span className="font-bold text-lg">${stats.dailyAverage.toFixed(0)}</span>
+                    </div>
+                    <ProgressBar value={Math.min((stats.dailyAverage / 20) * 100, 100)} color="rgba(255,255,255,0.8)" active height={6} />
+                  </div>
+                </div>
+                <div className="mt-6 pt-6 border-t border-white/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingDown className="w-4 h-4" />
+                    <span className="text-sm text-white/70">Difference</span>
+                  </div>
+                  <div className="text-2xl font-bold">
+                    {stats.dailyAverage > 20 ? '+' : ''}
+                    ${(stats.dailyAverage - 20).toFixed(0)}/day
+                  </div>
+                  <p className="text-xs text-white/60 mt-2">
+                    {stats.dailyAverage > 20 
+                      ? `You spent ${((stats.dailyAverage / 20 - 1) * 100).toFixed(0)}% more than your ideal budget, but had amazing experiences!`
+                      : `You stayed ${((1 - stats.dailyAverage / 20) * 100).toFixed(0)}% under budget — impressive!`}
+                  </p>
                 </div>
               </div>
             </WrappedCard>
@@ -337,10 +399,10 @@ export default function Home() {
                   <div className="text-sm font-semibold tracking-widest uppercase opacity-70">They ate well</div>
                 </div>
                 <div className="text-7xl font-bold mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
-                  ${stats.foodTotal.toFixed(0)}
+                  {currency === 'usd' ? '$' : '¥'}{stats.foodTotal.toFixed(0)}
                 </div>
                 <div className="text-white/70 text-lg mb-6">
-                  spent on food — that's <span className="font-bold text-white">${(stats.foodTotal / stats.daysTracked).toFixed(2)}/day</span> on average
+                  spent on food — that's <span className="font-bold text-white">{currency === 'usd' ? '$' : '¥'}{(stats.foodTotal / stats.daysTracked).toFixed(2)}/day</span> on average
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <GlassPanel>
@@ -351,7 +413,7 @@ export default function Home() {
                   </GlassPanel>
                   <GlassPanel>
                     <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>
-                      ${stats.categoryStats.find(c => c.category === 'Food')
+                      {currency === 'usd' ? '$' : '¥'}{stats.categoryStats.find(c => c.category === 'Food')
                         ? (stats.foodTotal / (stats.categoryStats.find(c => c.category === 'Food')?.count || 1)).toFixed(1)
                         : '0'}
                     </div>
@@ -369,7 +431,7 @@ export default function Home() {
                   <div className="text-sm font-semibold tracking-widest uppercase opacity-70">Beds & Hostels</div>
                 </div>
                 <div className="text-7xl font-bold mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
-                  ${stats.accommodationTotal.toFixed(0)}
+                  {currency === 'usd' ? '$' : '¥'}{stats.accommodationTotal.toFixed(0)}
                 </div>
                 <div className="text-white/70 text-lg mb-6">
                   on accommodation · <span className="font-bold text-white">{stats.categoryStats.find(c => c.category === 'Accommodation')?.count || 0} stays</span>
@@ -385,7 +447,7 @@ export default function Home() {
                           <div className="text-sm font-semibold">{t.merchant}</div>
                           <div className="text-xs text-white/50">{t.city} · {formatDate(t.date)}</div>
                         </div>
-                        <div className="mono text-sm font-bold">${Math.abs(t.usd).toFixed(2)}</div>
+                        <div className="mono text-sm font-bold">{currency === "usd" ? `$${Math.abs(t.usd).toFixed(2)}` : `¥${Math.abs(t.cny).toFixed(0)}`}</div>
                       </div>
                     ))}
                 </div>
@@ -400,7 +462,7 @@ export default function Home() {
                   <div className="text-sm font-semibold tracking-widest uppercase opacity-70">Getting Around</div>
                 </div>
                 <div className="text-7xl font-bold mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
-                  ${stats.transportTotal.toFixed(0)}
+                  {currency === 'usd' ? '$' : '¥'}{stats.transportTotal.toFixed(0)}
                 </div>
                 <div className="text-white/70 text-lg mb-6">
                   on transport — trains, metros, bikes
@@ -408,13 +470,13 @@ export default function Home() {
                 <div className="grid grid-cols-2 gap-3">
                   <GlassPanel>
                     <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>
-                      ${(stats.categoryStats.find(c => c.category === 'Intercity Transport')?.total || 0).toFixed(0)}
+                      {currency === 'usd' ? '$' : '¥'}{(stats.categoryStats.find(c => c.category === 'Intercity Transport')?.total || 0).toFixed(0)}
                     </div>
                     <div className="text-xs opacity-70 mt-1">intercity trains</div>
                   </GlassPanel>
                   <GlassPanel>
                     <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>
-                      ${(stats.categoryStats.find(c => c.category === 'Transport')?.total || 0).toFixed(0)}
+                      {currency === 'usd' ? '$' : '¥'}{(stats.categoryStats.find(c => c.category === 'Transport')?.total || 0).toFixed(0)}
                     </div>
                     <div className="text-xs opacity-70 mt-1">local transport</div>
                   </GlassPanel>
@@ -431,7 +493,7 @@ export default function Home() {
                     <div className="text-sm font-semibold tracking-widest uppercase opacity-70">Biggest splurge</div>
                   </div>
                   <div className="text-7xl font-bold mb-2" style={{ fontFamily: 'Syne, sans-serif', color: '#1a1a1a' }}>
-                    ${Math.abs(stats.biggestPurchase.usd).toFixed(0)}
+                    {currency === 'usd' ? '$' : '¥'}{Math.abs(stats.biggestPurchase.usd).toFixed(0)}
                   </div>
                   <div className="text-black/60 text-lg mb-4">
                     <span className="font-bold text-black">{stats.biggestPurchase.merchant}</span>
@@ -457,11 +519,14 @@ export default function Home() {
                     {stats.topMerchant.name}
                   </div>
                   <div className="text-white/70 text-lg mb-6">
-                    They went back <span className="font-bold text-white">{stats.topMerchant.count} times</span> — spending ${stats.topMerchant.total.toFixed(2)} total
+                    They went back <span className="font-bold text-white">{stats.topMerchant.count} times</span> — spending {currency === 'usd' ? '$' : '¥'}{stats.topMerchant.total.toFixed(2)} total
                   </div>
                 </div>
               </WrappedCard>
             )}
+
+            {/* ── CARD 11: City Route ── */}
+            <CityRouteCard stats={stats} />
 
             {/* ── CARD 12: Weekday Spending ── */}
             <WrappedCard gradient="linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)">
@@ -477,7 +542,7 @@ export default function Home() {
                     <YAxis hide />
                     <Tooltip
                       contentStyle={{ background: 'rgba(13,13,15,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, color: '#fff' }}
-                      formatter={(v: number) => [`$${v.toFixed(2)}`, 'Total']}
+                      formatter={(v: number) => [`${currency === 'usd' ? '$' : '¥'}${v.toFixed(2)}`, 'Total']}
                     />
                     <Bar dataKey="total" radius={[6, 6, 0, 0]}>
                       {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((d, i) => (
@@ -498,7 +563,7 @@ export default function Home() {
                     <div className="text-sm font-semibold tracking-widest uppercase opacity-70">Adventures</div>
                   </div>
                   <div className="text-7xl font-bold mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
-                    ${(stats.categoryStats.find(c => c.category === 'Activities')?.total || 0).toFixed(0)}
+                    {currency === 'usd' ? '$' : '¥'}{(stats.categoryStats.find(c => c.category === 'Activities')?.total || 0).toFixed(0)}
                   </div>
                   <div className="text-white/70 text-lg mb-6">
                     on activities · <span className="font-bold text-white">{stats.categoryStats.find(c => c.category === 'Activities')?.count || 0} experiences</span>
@@ -514,7 +579,7 @@ export default function Home() {
                             <div className="text-sm font-semibold">{t.merchant}</div>
                             <div className="text-xs text-white/50">{t.city} · {formatDate(t.date)}</div>
                           </div>
-                          <div className="mono text-sm font-bold">${Math.abs(t.usd).toFixed(2)}</div>
+                          <div className="mono text-sm font-bold">{currency === 'usd' ? '$' : '¥'}{Math.abs(t.usd).toFixed(2)}</div>
                         </div>
                       ))}
                   </div>
@@ -537,7 +602,7 @@ export default function Home() {
               <HighlightMiniCard
                 gradient="linear-gradient(135deg, #f7971e 0%, #ffd200 100%)"
                 label="Trip-wide"
-                value={`$${stats.tripWideTotal.toFixed(0)}`}
+                value={`${currency === 'usd' ? '$' : '¥'}${stats.tripWideTotal.toFixed(0)}`}
                 sub="SIM, VPN, rail"
                 delay={100}
                 dark
@@ -545,7 +610,7 @@ export default function Home() {
               <HighlightMiniCard
                 gradient="linear-gradient(135deg, #8360c3 0%, #2ebf91 100%)"
                 label="Cheapest Day"
-                value={`$${stats.cheapestDay?.total.toFixed(2)}`}
+                value={`${currency === 'usd' ? '$' : '¥'}${stats.cheapestDay?.total.toFixed(2)}`}
                 sub={formatDate(stats.cheapestDay?.date || '')}
                 delay={200}
               />
@@ -572,7 +637,7 @@ export default function Home() {
                         <div key={method}>
                           <div className="flex justify-between text-sm mb-1">
                             <span className="font-medium">{method}</span>
-                            <span className="mono text-white/60">${amount.toFixed(0)} · {pct.toFixed(0)}%</span>
+                            <span className="mono text-white/60">{currency === 'usd' ? '$' : '¥'}{amount.toFixed(0)} · {pct.toFixed(0)}%</span>
                           </div>
                           <ProgressBar value={pct} color="#8360c3" active height={5} />
                         </div>
@@ -582,8 +647,27 @@ export default function Home() {
               </div>
             </WrappedCard>
 
-            {/* ── CARD 14: Daily Log Table ── */}
-            <DailyLogCard stats={stats} />
+
+            {/* ── CARD 14: Fun Facts ── */}
+            <WrappedCard gradient="linear-gradient(135deg, #f953c6 0%, #8360c3 100%)">
+              <div className="p-8 text-white">
+                <div className="flex items-center gap-2 mb-6">
+                  <Zap className="w-5 h-5 text-white/70" />
+                  <div className="text-sm font-semibold tracking-widest uppercase opacity-70">Fun Facts</div>
+                </div>
+                <div className="space-y-4">
+                  {generateFunFacts(stats).map((fact, i) => (
+                    <div key={i} className="flex items-start gap-3 p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                      <div className="text-lg font-bold flex-shrink-0" style={{ color: `hsl(${i * 60}, 80%, 65%)` }}>•</div>
+                      <p className="text-sm text-white/90 leading-relaxed">{fact}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </WrappedCard>
+
+            {/* ── CARD 15: Daily Log Table ── */}
+            <DailyLogCard stats={stats} currency={currency} />
 
             {/* ── CARD 15: Accommodation Daily ── */}
             {accommodations.length > 0 && (
@@ -598,43 +682,79 @@ export default function Home() {
                       <div key={i} className="flex justify-between items-center py-2 border-b border-white/10">
                         <div>
                           <div className="text-sm font-medium text-white">{acc.merchant}</div>
-                          <div className="text-xs text-white/50">{formatDateFull(acc.date)} · {acc.city}</div>
+                          <div className="text-xs text-white/50">{formatDateFull(acc.date)} · {getCityEmoji(acc.city)} {acc.city}</div>
                         </div>
-                        <div className="text-sm mono font-bold text-white/80">
-                          {formatCurrency(acc.amountUSD, acc.amountCNY)}
-                        </div>
+                        <div className="text-sm mono font-bold text-white/80">${acc.amountUSD.toFixed(2)}</div>
                       </div>
                     ))}
                   </div>
                   <div className="mt-6 pt-4 border-t border-white/20">
                     <div className="flex justify-between text-sm">
                       <span className="text-white/60">Total Accommodations</span>
-                      <span className="font-bold">
-                        {formatCurrency(
-                          accommodations.reduce((s, a) => s + a.amountUSD, 0),
-                          accommodations.reduce((s, a) => s + a.amountCNY, 0)
-                        )}
-                      </span>
+                      <span className="font-bold">${accommodations.reduce((s, a) => s + a.amountUSD, 0).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm mt-2">
                       <span className="text-white/60">Average per night</span>
-                      <span className="font-bold">
-                        {formatCurrency(
-                          accommodations.reduce((s, a) => s + a.amountUSD, 0) / accommodations.length,
-                          accommodations.reduce((s, a) => s + a.amountCNY, 0) / accommodations.length
-                        )}
-                      </span>
+                      <span className="font-bold">${(accommodations.reduce((s, a) => s + a.amountUSD, 0) / accommodations.length).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
               </WrappedCard>
             )}
 
+
+            {/* ── CARD 16: Daily Timeline ── */}
+            <WrappedCard gradient="linear-gradient(135deg, #1a1a2e 0%, #0d0d0f 100%)">
+              <div className="p-8 text-white">
+                <div className="flex items-center gap-2 mb-6">
+                  <Calendar className="w-5 h-5 text-white/70" />
+                  <div className="text-sm font-semibold tracking-widest uppercase opacity-70">25-Day Journey</div>
+                </div>
+                <div className="overflow-x-auto pb-4">
+                  <div className="flex gap-1.5 min-w-max" style={{ height: '120px' }}>
+                    {stats.dayStats.map((day, i) => {
+                      const maxDaily = Math.max(...stats.dayStats.map(d => d.total));
+                      const height = (day.total / maxDaily) * 100;
+                      const isAccommodationDay = accommodations.some(a => a.date === day.date);
+                      return (
+                        <div key={day.date} className="flex flex-col items-center gap-1 flex-shrink-0 group">
+                          <div className="relative" style={{ height: '80px', width: '12px' }}>
+                            <div
+                              className="absolute bottom-0 left-0 right-0 rounded-t-sm transition-all duration-200 group-hover:opacity-100 opacity-70"
+                              style={{
+                                height: `${height}%`,
+                                background: `linear-gradient(180deg, ${isAccommodationDay ? '#8360c3' : '#FF6B6B'}, ${isAccommodationDay ? '#2ebf91' : '#FF8E53'})`
+                              }}
+                            />
+                            {isAccommodationDay && (
+                              <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 text-xs">🏨</div>
+                            )}
+                          </div>
+                          <div className="text-xs text-white/50 text-center w-12 truncate">{formatDate(day.date)}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="mt-4 pt-4 border-t border-white/20 flex items-center justify-between text-xs text-white/60">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-t-sm" style={{ background: '#FF6B6B' }} />
+                    <span>Daily Spend</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span>🏨</span>
+                    <span>Accommodation</span>
+                  </div>
+                </div>
+              </div>
+            </WrappedCard>
+
             {/* ── Footer ── */}
             <div className="text-center py-8 text-white/30 text-sm">
               <div className="text-2xl mb-2">元</div>
               <div>China Overland · {stats.dateRange.start} → {stats.dateRange.end}</div>
-              </div>
+              <div className="text-xs mt-1 text-white/20">Drop a new transactions.csv to update</div>
+            </div>
           </>
         )}
       </main>
@@ -752,14 +872,30 @@ function CityRouteCard({ stats }: { stats: TripStats }) {
     >
       <div className="text-sm font-semibold tracking-widest uppercase text-white/50 mb-2">Your Route</div>
       <div className="text-3xl font-bold mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>
-        {cityJourney.map(c => c.city).join(' → ')}
+        {stats.cityStats.map(c => c.city).join(' → ')}
+      </div>
+      <div className="flex flex-wrap gap-3">
+        {cityJourney.filter(c => c.city !== 'Trip-wide').map((stop, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <div
+              className="rounded-xl px-4 py-3 text-white"
+              style={{ background: getCityGradient(stop.city) }}
+            >
+              <div className="text-sm font-bold">{stop.city}</div>
+              <div className="text-xs opacity-70">{stop.days}d · {formatDate(stop.date)}</div>
+            </div>
+            {i < cityJourney.filter(c => c.city !== 'Trip-wide').length - 1 && (
+              <ArrowRight className="w-4 h-4 text-white/30 flex-shrink-0" />
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
 // Daily log expandable card
-function DailyLogCard({ stats }: { stats: TripStats }) {
+function DailyLogCard({ stats, currency }: { stats: TripStats; currency: 'cny' | 'usd' }) {
   const { ref, visible } = useScrollReveal();
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -777,26 +913,21 @@ function DailyLogCard({ stats }: { stats: TripStats }) {
         {stats.dayStats.slice().reverse().map((day) => (
           <div key={day.date}>
             <button
-              className="w-full flex items-center justify-between px-4 sm:px-6 py-4 hover:bg-white/5 transition-colors text-left"
+              className="w-full flex items-center justify-between px-6 py-3 hover:bg-white/5 transition-colors text-left"
               onClick={() => setExpanded(expanded === day.date ? null : day.date)}
             >
-              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 flex-1 min-w-0 mr-4">
-                <span className="text-white/30 text-[10px] sm:text-xs mono uppercase tracking-wider whitespace-nowrap">{formatDateFull(day.date)}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-white/30 text-xs mono">{formatDateFull(day.date)}</span>
                 {day.cities.length > 0 && (
-                  <span className="text-xs text-white/50 flex items-center gap-1 truncate font-medium">
-                    <MapPin className="w-3 h-3 flex-shrink-0" />
-                    <span className="truncate">{day.cities.join(' → ')}</span>
+                  <span className="text-xs text-white/50 flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />{day.cities.join(' → ')}
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                <div className="hidden xs:block">
-                  <CategoryPill label={day.topCategory} color={getCategoryColor(day.topCategory)} size="sm" />
-                </div>
-                <span className="mono text-sm sm:text-base font-bold text-white whitespace-nowrap">
-                  ${day.total.toFixed(2)}
-                </span>
-                <ArrowRight className={`w-4 h-4 text-white/30 transition-transform flex-shrink-0 ${expanded === day.date ? 'rotate-90' : ''}`} />
+              <div className="flex items-center gap-3">
+                <CategoryPill label={day.topCategory} color={getCategoryColor(day.topCategory)} size="sm" />
+                <span className="mono text-sm font-bold text-white">${day.total.toFixed(2)}</span>
+                <ArrowRight className={`w-4 h-4 text-white/30 transition-transform ${expanded === day.date ? 'rotate-90' : ''}`} />
               </div>
             </button>
             {expanded === day.date && (
@@ -807,7 +938,7 @@ function DailyLogCard({ stats }: { stats: TripStats }) {
                       <span className="text-sm text-white/80">{t.merchant}</span>
                       <span className="text-xs text-white/30 ml-2">{t.category}</span>
                     </div>
-                    <span className="mono text-sm text-white/60">${Math.abs(t.usd).toFixed(2)}</span>
+                    <span className="mono text-sm text-white/60">{currency === "usd" ? `$${Math.abs(t.usd).toFixed(2)}` : `¥${Math.abs(t.cny).toFixed(0)}`}</span>
                   </div>
                 ))}
               </div>

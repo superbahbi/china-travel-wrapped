@@ -95,6 +95,17 @@ export function getCategoryColor(category: string): string {
   return CATEGORY_COLORS[category] || '#9D84B7';
 }
 
+// City emoji mapping
+export const CITY_EMOJIS: Record<string, string> = {
+  'Shenzhen': '🏙️', 'Guangzhou': '🍜', 'Zhaoqing': '🏞️', 'Guilin': '⛰️',
+  'Yangshuo': '🌾', 'Changsha': '🎎', 'Zhangjiajie': '🏔️', 'Jishou': '🏘️',
+  'Kunming': '🌸', 'Lijiang': '🏯',
+};
+
+export function getCityEmoji(city: string): string {
+  return CITY_EMOJIS[city] || '📍';
+}
+
 export function getCityGradient(city: string): string {
   const gradients: Record<string, string> = {
     'Shanghai': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -369,6 +380,19 @@ export function formatDateFull(dateStr: string): string {
   if (isNaN(dt.getTime())) return dateStr;
   return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
 }
+
+
+export function generateFunFacts(stats: TripStats): string[] {
+  const facts: string[] = [];
+  if (stats.topMerchant) facts.push(`You visited ${stats.topMerchant.name} ${stats.topMerchant.count} times`);
+  if (stats.biggestPurchase) facts.push(`Your biggest purchase: ${stats.biggestPurchase.merchant} ($${Math.abs(stats.biggestPurchase.usd).toFixed(0)})`);
+  if (stats.mostVisitedCity) facts.push(`Longest stay: ${stats.mostVisitedCity.city} (${stats.mostVisitedCity.days} nights)`);
+  if (stats.mostExpensiveDay) facts.push(`Peak spending day: ${formatDate(stats.mostExpensiveDay.date)} ($${stats.mostExpensiveDay.total.toFixed(0)})`);
+  if (stats.cheapestDay) facts.push(`Most frugal day: ${formatDate(stats.cheapestDay.date)} ($${stats.cheapestDay.total.toFixed(2)})`);
+  facts.push(`Average transaction: $${stats.avgTransactionSize.toFixed(2)}`);
+  return facts.slice(0, 6);
+}
+
 
 export interface AccommodationEntry {
   date: string;

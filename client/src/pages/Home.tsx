@@ -936,14 +936,12 @@ function DailyLogCard({ stats, currency }: { stats: TripStats; currency: 'cny' |
               {expanded === day.date && dayTransactions.length > 0 && (
                 <div className="px-6 pb-3 space-y-1.5 bg-white/3 border-t border-white/5">
                   {dayTransactions.map((t, i) => (
-                    <div key={i} className="flex justify-between items-start gap-2 py-1.5">
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm text-white/80 truncate">{t.merchant}</div>
-                        <div className="text-xs text-white/30">{t.category}</div>
-                      </div>
+                    <div key={i} className="flex justify-between items-center gap-2 py-1.5">
+                      <div className="text-sm text-white/80 truncate">{t.merchant}</div>
                       <span className="mono text-sm text-white/60 flex-shrink-0">{currency === "usd" ? `$${Math.abs(t.usd).toFixed(2)}` : `¥${Math.abs(t.cny).toFixed(0)}`}</span>
                     </div>
                   ))}
+
                 </div>
               )}
             </div>

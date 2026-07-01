@@ -703,52 +703,6 @@ export default function Home() {
             )}
 
 
-            {/* ── CARD 16: Daily Timeline ── */}
-            <WrappedCard gradient="linear-gradient(135deg, #1a1a2e 0%, #0d0d0f 100%)">
-              <div className="p-8 text-white">
-                <div className="flex items-center gap-2 mb-6">
-                  <Calendar className="w-5 h-5 text-white/70" />
-                  <div className="text-sm font-semibold tracking-widest uppercase opacity-70">25-Day Journey</div>
-                </div>
-                <div className="overflow-x-auto pb-4">
-                  <div className="flex gap-1.5 min-w-max" style={{ height: '120px' }}>
-                    {stats.dayStats.map((day, i) => {
-                      const maxDaily = Math.max(...stats.dayStats.map(d => d.total));
-                      const height = (day.total / maxDaily) * 100;
-                      const isAccommodationDay = accommodations.some(a => a.date === day.date);
-                      return (
-                        <div key={day.date} className="flex flex-col items-center gap-1 flex-shrink-0 group">
-                          <div className="relative" style={{ height: '80px', width: '12px' }}>
-                            <div
-                              className="absolute bottom-0 left-0 right-0 rounded-t-sm transition-all duration-200 group-hover:opacity-100 opacity-70"
-                              style={{
-                                height: `${height}%`,
-                                background: `linear-gradient(180deg, ${isAccommodationDay ? '#8360c3' : '#FF6B6B'}, ${isAccommodationDay ? '#2ebf91' : '#FF8E53'})`
-                              }}
-                            />
-                            {isAccommodationDay && (
-                              <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 text-xs">🏨</div>
-                            )}
-                          </div>
-                          <div className="text-xs text-white/50 text-center w-12 truncate">{formatDate(day.date)}</div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div className="mt-4 pt-4 border-t border-white/20 flex items-center justify-between text-xs text-white/60">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-t-sm" style={{ background: '#FF6B6B' }} />
-                    <span>Daily Spend</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span>🏨</span>
-                    <span>Accommodation</span>
-                  </div>
-                </div>
-              </div>
-            </WrappedCard>
-
             {/* ── Footer ── */}
             <div className="text-center py-8 text-white/30 text-sm">
               <div className="text-2xl mb-2">元</div>

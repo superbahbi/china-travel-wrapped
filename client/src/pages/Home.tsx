@@ -537,7 +537,7 @@ export default function Home() {
               <HighlightMiniCard
                 gradient="linear-gradient(135deg, #f7971e 0%, #ffd200 100%)"
                 label="Trip-wide"
-                value={`$$${stats.tripWideTotal.toFixed(0)}`}
+                value={`$${stats.tripWideTotal.toFixed(0)}`}
                 sub="SIM, VPN, rail"
                 delay={100}
                 dark
@@ -545,7 +545,7 @@ export default function Home() {
               <HighlightMiniCard
                 gradient="linear-gradient(135deg, #8360c3 0%, #2ebf91 100%)"
                 label="Cheapest Day"
-                value={`$$${stats.cheapestDay?.total.toFixed(2)}`}
+                value={`$${stats.cheapestDay?.total.toFixed(2)}`}
                 sub={formatDate(stats.cheapestDay?.date || '')}
                 delay={200}
               />

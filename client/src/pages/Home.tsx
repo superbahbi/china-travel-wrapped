@@ -396,8 +396,18 @@ export default function Home() {
               <div className="p-8 text-white">
                 <div className="text-sm font-semibold tracking-widest uppercase opacity-70 mb-4">Mixue Obsession</div>
                 <div className="text-7xl font-bold mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>8</div>
-                <div className="text-white/70 text-lg">times at Mixue</div>
-                <p className="text-sm text-white/60 mt-4">You really loved that bubble tea! 🍹</p>
+                <div className="text-white/70 text-lg mb-6">times at Mixue</div>
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <GlassPanel>
+                    <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>$6.06</div>
+                    <div className="text-xs opacity-70 mt-1">total spent</div>
+                  </GlassPanel>
+                  <GlassPanel>
+                    <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>$0.76</div>
+                    <div className="text-xs opacity-70 mt-1">per visit</div>
+                  </GlassPanel>
+                </div>
+                <p className="text-sm text-white/60">You really loved that bubble tea! 🍹</p>
               </div>
             </WrappedCard>
 

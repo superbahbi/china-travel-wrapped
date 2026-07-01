@@ -463,9 +463,6 @@ export default function Home() {
               </WrappedCard>
             )}
 
-            {/* ── CARD 11: City Route ── */}
-            <CityRouteCard stats={stats} />
-
             {/* ── CARD 12: Weekday Spending ── */}
             <WrappedCard gradient="linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)">
               <div className="p-8 text-white">
@@ -756,22 +753,6 @@ function CityRouteCard({ stats }: { stats: TripStats }) {
       <div className="text-sm font-semibold tracking-widest uppercase text-white/50 mb-2">Your Route</div>
       <div className="text-3xl font-bold mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>
         {cityJourney.map(c => c.city).join(' → ')}
-      </div>
-      <div className="flex flex-wrap gap-3">
-        {cityJourney.filter(c => c.city !== 'Trip-wide').map((stop, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <div
-              className="rounded-xl px-4 py-3 text-white"
-              style={{ background: getCityGradient(stop.city) }}
-            >
-              <div className="text-sm font-bold">{stop.city}</div>
-              <div className="text-xs opacity-70">{stop.days}d · {formatDate(stop.date)}</div>
-            </div>
-            {i < cityJourney.filter(c => c.city !== 'Trip-wide').length - 1 && (
-              <ArrowRight className="w-4 h-4 text-white/30 flex-shrink-0" />
-            )}
-          </div>
-        ))}
       </div>
     </div>
   );

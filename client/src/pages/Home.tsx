@@ -172,7 +172,7 @@ export default function Home() {
                   </GlassPanel>
                   <GlassPanel>
                     <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>${stats.avgTransactionSize.toFixed(0)}</div>
-                    <div className="text-xs opacity-70 mt-1">avg per txn</div>
+                    <div className="text-xs opacity-70 mt-1">avg/txn</div>
                   </GlassPanel>
                 </div>
               </div>

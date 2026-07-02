@@ -5,7 +5,9 @@
 // ============================================================
 import { useState, useEffect, useCallback } from 'react';
 import { parseTransactions, computeTripStats, TripStats, formatDate, formatDateFull, getCategoryColor, getCityGradient, CATEGORY_COLORS, parseAccommodations, AccommodationEntry } from '@/lib/csvParser';
+import { getAchievements } from '@/lib/achievements';
 import { WrappedCard, StatNumber, CategoryPill, ProgressBar, GlassPanel } from '@/components/WrappedCard';
+import { AchievementsCard } from '@/components/Achievements';
 
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
@@ -485,6 +487,9 @@ export default function Home() {
 
             {/* ── CARD 11: City Route ── */}
             <CityRouteCard stats={stats} />
+
+            {/* ── CARD 11.5: Travel Achievements ── */}
+            <AchievementsCard achievements={getAchievements(stats.transactions, stats)} />
 
             {/* ── CARD 12: Weekday Spending ── */}
             <WrappedCard gradient="linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)">

@@ -1,0 +1,138 @@
+// Achievements Gallery Component with Custom Badge Images
+import { useState, useEffect } from 'react';
+import { Achievement } from '@/lib/achievements';
+import { useScrollReveal } from '@/hooks/useScrollReveal';
+
+const BADGE_IMAGES: Record<string, string> = {
+  'street-foodie': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-street-foodie-DNocM2Fcp7RVCBAVBiwYPm.webp',
+  'train-hopper': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-train-hopper-Hts4QkYfNa23GWecQXeoir.webp',
+  'budget-master': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-budget-master-Hmpnn4h68u2sXkh3WTvXKT.webp',
+  'accommodation-collector': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-accommodation-collector-MoydeTiPAjMQ5CCnqPVafh.webp',
+  'food-lover': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-food-lover-Q69vQRFKkfNnumoohuQRzE.webp',
+  'long-journey': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-long-journey-Y4NwUbK6XFSnZ2NxxEfVoG.webp',
+  'mixue-enthusiast': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-mixue-enthusiast-ZtbdbGtB3rVg4Zu8xtGxXp.webp',
+  'big-spender': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-big-spender-QEYBS5SvA2wydBcw3GWGWe.webp',
+  'early-bird': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-early-bird-4Uhs87Y8vA5j2mLfMTWhpF.webp',
+  'night-owl': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-night-owl-Ebu2sYUSkENpBqgSbKTBrz.webp',
+};
+
+export function AchievementsCard({ achievements }: { achievements: Achievement[] }) {
+  const { ref, visible } = useScrollReveal();
+  const [unlockedCount, setUnlockedCount] = useState(0);
+  const [flipped, setFlipped] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setUnlockedCount(achievements.filter(a => a.unlocked).length);
+  }, [achievements]);
+
+  const toggleFlip = (id: string) => {
+    const newFlipped = new Set(flipped);
+    if (newFlipped.has(id)) {
+      newFlipped.delete(id);
+    } else {
+      newFlipped.add(id);
+    }
+    setFlipped(newFlipped);
+  };
+
+  return (
+    <div
+      ref={ref}
+      className={`reveal rounded-3xl overflow-hidden ${visible ? 'visible' : ''}`}
+      style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #0d0d0f 100%)', border: '1px solid rgba(255,255,255,0.08)' }}
+    >
+      <div className="p-6 pb-4">
+        <div className="text-sm font-semibold tracking-widest uppercase text-white/50 mb-1">Travel Achievements</div>
+        <div className="text-2xl font-bold text-white mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
+          {unlockedCount} of {achievements.length} Unlocked
+        </div>
+        <div className="w-full bg-white/10 rounded-full h-2">
+          <div 
+            className="bg-gradient-to-r from-[#f953c6] to-[#8360c3] h-2 rounded-full transition-all duration-500"
+            style={{ width: `${(unlockedCount / achievements.length) * 100}%` }}
+          ></div>
+        </div>
+      </div>
+
+      <div className="p-6 pt-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {achievements.map((achievement, idx) => {
+            const badgeImage = BADGE_IMAGES[achievement.id];
+            return (
+              <div
+                key={achievement.id}
+                onClick={() => toggleFlip(achievement.id)}
+                className="h-32 cursor-pointer perspective"
+                style={{
+                  perspective: '1000px',
+                  animation: achievement.unlocked ? `slideIn 0.5s ease-out ${idx * 0.1}s both` : 'none'
+                }}
+              >
+                <div
+                  className="relative w-full h-full transition-transform duration-500"
+                  style={{
+                    transformStyle: 'preserve-3d',
+                    transform: flipped.has(achievement.id) ? 'rotateY(180deg)' : 'rotateY(0deg)'
+                  }}
+                >
+                  {/* Front - Badge Image */}
+                  <div
+                    className={`absolute w-full h-full rounded-xl p-2 flex flex-col items-center justify-center text-center overflow-hidden ${
+                      achievement.unlocked
+                        ? 'ring-2 ring-yellow-400/50'
+                        : 'ring-1 ring-white/20'
+                    }`}
+                    style={{ 
+                      backfaceVisibility: 'hidden',
+                      background: achievement.unlocked ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.5)'
+                    }}
+                  >
+                    {badgeImage ? (
+                      <img 
+                        src={badgeImage} 
+                        alt={achievement.name}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    ) : (
+                      <div className="text-4xl">{achievement.icon}</div>
+                    )}
+                    {!achievement.unlocked && (
+                      <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center">
+                        <div className="text-2xl">🔒</div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Back - Description */}
+                  <div
+                    className="absolute w-full h-full rounded-xl p-4 flex flex-col items-center justify-center text-center bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-400/40"
+                    style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+                  >
+                    <div className="text-sm font-bold text-white mb-2">{achievement.name}</div>
+                    <div className="text-xs text-white/80 leading-tight">{achievement.description}</div>
+                    {achievement.unlocked && (
+                      <div className="text-xs text-yellow-300 mt-2 font-semibold">✓ Unlocked!</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+    </div>
+  );
+}

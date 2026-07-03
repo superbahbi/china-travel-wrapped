@@ -1,7 +1,7 @@
-// Achievements Gallery Component with Custom Badge Images
 import { useState, useEffect } from 'react';
 import { Achievement } from '@/lib/achievements';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const BADGE_IMAGES: Record<string, string> = {
   'street-foodie': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-street-foodie-DNocM2Fcp7RVCBAVBiwYPm.webp',
@@ -20,10 +20,27 @@ export function AchievementsCard({ achievements }: { achievements: Achievement[]
   const { ref, visible } = useScrollReveal();
   const [unlockedCount, setUnlockedCount] = useState(0);
   const [flipped, setFlipped] = useState<Set<string>>(new Set());
+  const [activeTab, setActiveTab] = useState<string>('all');
 
   useEffect(() => {
     setUnlockedCount(achievements.filter(a => a.unlocked).length);
   }, [achievements]);
+
+  const categories = [
+    { id: 'all', label: 'All', icon: '🏆' },
+    { id: 'spending', label: 'Spending', icon: '💰' },
+    { id: 'travel', label: 'Travel', icon: '✈️' },
+    { id: 'food', label: 'Food', icon: '🍽️' },
+    { id: 'lifestyle', label: 'Lifestyle', icon: '🌟' }
+  ];
+
+  const getFilteredAchievements = () => {
+    if (activeTab === 'all') return achievements;
+    return achievements.filter((a: any) => a.category === activeTab);
+  };
+
+  const filteredAchievements = getFilteredAchievements();
+  const filteredUnlockedCount = filteredAchievements.filter(a => a.unlocked).length;
 
   const toggleFlip = (id: string) => {
     const newFlipped = new Set(flipped);
@@ -47,85 +64,103 @@ export function AchievementsCard({ achievements }: { achievements: Achievement[]
           {unlockedCount} of {achievements.length} Unlocked
         </div>
         <div className="w-full bg-white/10 rounded-full h-2">
-          <div 
-            className="bg-gradient-to-r from-[#f953c6] to-[#8360c3] h-2 rounded-full transition-all duration-500"
+          <div
+            className="bg-gradient-to-r from-yellow-400 to-yellow-500 h-full rounded-full transition-all duration-500"
             style={{ width: `${(unlockedCount / achievements.length) * 100}%` }}
-          ></div>
+          />
         </div>
       </div>
 
-      <div className="p-6 pt-4">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {achievements.map((achievement, idx) => {
-            const badgeImage = BADGE_IMAGES[achievement.id];
-            return (
-              <div
-                key={achievement.id}
-                onClick={() => toggleFlip(achievement.id)}
-                className="h-32 cursor-pointer perspective"
-                style={{
-                  perspective: '1000px',
-                  animation: achievement.unlocked ? `slideIn 0.5s ease-out ${idx * 0.1}s both` : 'none'
-                }}
-              >
-                <div
-                  className="relative w-full h-full transition-transform duration-500"
-                  style={{
-                    transformStyle: 'preserve-3d',
-                    transform: flipped.has(achievement.id) ? 'rotateY(180deg)' : 'rotateY(0deg)'
-                  }}
-                >
-                  {/* Front - Badge Image */}
-                  <div
-                    className={`absolute w-full h-full rounded-xl p-2 flex flex-col items-center justify-center text-center overflow-hidden ${
-                      achievement.unlocked
-                        ? 'ring-2 ring-yellow-400/50'
-                        : 'ring-1 ring-white/20'
-                    }`}
-                    style={{ 
-                      backfaceVisibility: 'hidden',
-                      background: achievement.unlocked ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.5)'
-                    }}
-                  >
-                    {badgeImage ? (
-                      <img 
-                        src={badgeImage} 
-                        alt={achievement.name}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    ) : (
-                      <div className="text-4xl">{achievement.icon}</div>
-                    )}
-                    {!achievement.unlocked && (
-                      <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center">
-                        <div className="text-2xl">🔒</div>
-                      </div>
-                    )}
-                  </div>
+      <div className="px-6 pb-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-5 mb-6 bg-white/5 border border-white/10 p-1">
+            {categories.map(cat => (
+              <TabsTrigger key={cat.id} value={cat.id} className="text-xs sm:text-sm py-1">
+                <span className="mr-1">{cat.icon}</span>
+                <span className="hidden sm:inline">{cat.label}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
-                  {/* Back - Description */}
-                  <div
-                    className="absolute w-full h-full rounded-xl p-4 flex flex-col items-center justify-center text-center bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-400/40"
-                    style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-                  >
-                    <div className="text-sm font-bold text-white mb-2">{achievement.name}</div>
-                    <div className="text-xs text-white/80 leading-tight">{achievement.description}</div>
-                    {achievement.unlocked && (
-                      <div className="text-xs text-yellow-300 mt-2 font-semibold">✓ Unlocked!</div>
-                    )}
-                  </div>
-                </div>
+          <TabsContent value={activeTab} className="mt-4">
+            {filteredAchievements.length === 0 ? (
+              <div className="text-center py-8 text-white/50">
+                No achievements in this category yet
               </div>
-            );
-          })}
-        </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {filteredAchievements.map((achievement: any, idx: number) => {
+                  const badgeImage = BADGE_IMAGES[achievement.id];
+                  return (
+                    <div
+                      key={achievement.id}
+                      className="relative w-full aspect-square cursor-pointer"
+                      onClick={() => toggleFlip(achievement.id)}
+                      style={{
+                        perspective: '1000px',
+                        animation: `slideIn 0.5s ease-out ${idx * 0.05}s both`
+                      }}
+                    >
+                      <div
+                        style={{
+                          transformStyle: 'preserve-3d',
+                          transform: flipped.has(achievement.id) ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                          transition: 'transform 0.6s'
+                        }}
+                      >
+                        {/* Front - Badge Image */}
+                        <div
+                          className="absolute w-full h-full rounded-xl p-2 flex flex-col items-center justify-center text-center overflow-hidden"
+                          style={{
+                            backfaceVisibility: 'hidden',
+                            background: 'transparent'
+                          }}
+                        >
+                          {badgeImage ? (
+                            <img
+                              src={badgeImage}
+                              alt={achievement.name}
+                              className="w-full h-full object-cover rounded-lg"
+                            />
+                          ) : (
+                            <div className="text-4xl">{achievement.icon}</div>
+                          )}
+                          {!achievement.unlocked && (
+                            <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center">
+                              <div className="text-2xl">🔒</div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Back - Description */}
+                        <div
+                          className="absolute w-full h-full rounded-xl p-3 flex flex-col items-center justify-center text-center bg-gradient-to-br from-white/10 to-white/5 border border-white/20"
+                          style={{
+                            backfaceVisibility: 'hidden',
+                            transform: 'rotateY(180deg)'
+                          }}
+                        >
+                          <div className="text-xs font-semibold text-white/80 mb-2">{achievement.name}</div>
+                          <div className="text-xs text-white/60">{achievement.description}</div>
+                          {achievement.unlocked && (
+                            <div className="mt-2 text-yellow-400 text-xs font-bold">✓ UNLOCKED</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
 
       <style>{`
         @keyframes slideIn {
           from {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(10px);
           }
           to {
             opacity: 1;

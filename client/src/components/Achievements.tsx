@@ -64,7 +64,7 @@ export function AchievementsCard({ achievements }: { achievements: Achievement[]
     <div
       ref={ref}
       className={`reveal rounded-3xl overflow-hidden ${visible ? 'visible' : ''}`}
-      style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #0d0d0f 100%)', border: '1px solid rgba(255,255,255,0.08)' }}
+      style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #0d0d0f 100%)' }}
     >
       <div className="p-6 pb-4">
         <div className="text-sm font-semibold tracking-widest uppercase text-white/50 mb-1">Travel Achievements</div>
@@ -79,7 +79,7 @@ export function AchievementsCard({ achievements }: { achievements: Achievement[]
         </div>
       </div>
 
-      <div className="px-6 pb-6">
+      <div className="px-6 pb-6 max-h-[600px] overflow-y-auto">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-5 mb-6 bg-white/5 border border-white/10 p-1">
             {categories.map(cat => (
@@ -96,13 +96,13 @@ export function AchievementsCard({ achievements }: { achievements: Achievement[]
                 No achievements in this category yet
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
                 {filteredAchievements.map((achievement: any, idx: number) => {
                   const badgeImage = BADGE_IMAGES[achievement.id];
                   return (
                     <div
                       key={achievement.id}
-                      className="relative w-full aspect-square cursor-pointer"
+                      className="relative w-full aspect-square cursor-pointer group"
                       onClick={() => toggleFlip(achievement.id)}
                       style={{
                         perspective: '1000px',
@@ -113,12 +113,14 @@ export function AchievementsCard({ achievements }: { achievements: Achievement[]
                         style={{
                           transformStyle: 'preserve-3d',
                           transform: flipped.has(achievement.id) ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                          transition: 'transform 0.6s'
+                          transition: 'transform 0.6s',
+                          width: '100%',
+                          height: '100%'
                         }}
                       >
                         {/* Front - Badge Image */}
                         <div
-                          className="absolute w-full h-full rounded-xl p-2 flex flex-col items-center justify-center text-center overflow-hidden"
+                          className="absolute w-full h-full rounded-lg overflow-hidden"
                           style={{
                             backfaceVisibility: 'hidden',
                             background: 'transparent'
@@ -128,10 +130,11 @@ export function AchievementsCard({ achievements }: { achievements: Achievement[]
                             <img
                               src={badgeImage}
                               alt={achievement.name}
-                              className="w-full h-full object-cover rounded-lg"
+                              className="w-full h-full object-contain"
+                              loading="lazy"
                             />
                           ) : (
-                            <div className="text-4xl">{achievement.icon}</div>
+                            <div className="w-full h-full flex items-center justify-center text-4xl">{achievement.icon}</div>
                           )}
                           {!achievement.unlocked && (
                             <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center">

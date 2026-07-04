@@ -14,14 +14,14 @@ const BADGE_IMAGES: Record<string, string> = {
   'big-spender': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-big-spender-QEYBS5SvA2wydBcw3GWGWe.webp',
   'early-bird': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-early-bird-4Uhs87Y8vA5j2mLfMTWhpF.webp',
   'night-owl': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-night-owl-Ebu2sYUSkENpBqgSbKTBrz.webp',
-  'city-explorer': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-city-explorer-eGfxVEPAtXKp2NNEe9wZvW.webp',
-  'weekend-warrior': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-weekend-warrior-TFBNyFDnqf8gkNEsSXkbZx.webp',
-  'noodle-master': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-noodle-master-PFUpCDS5Mb2ybVSczshWQp.webp',
-  'cafe-hopper': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-cafe-hopper-T8gkmCh4saMqipFQDUYhhR.webp',
-  'spender-supreme': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-spender-supreme-9BWwDJfRCmCL5ACBEpvv5A.webp',
-  'frugal-traveler': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-frugal-traveler-adZXRiQiSAmf4WdDJEZk3i.webp',
-  'activity-seeker': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-activity-seeker-A3qvReKFgGvScrhdTZf72a.webp',
-  'consistent-spender': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-consistent-spender-BmV2iG9t7twSz9922a9c7G.webp',
+  'city-explorer': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-city-explorer-cdiaMyuxv4N9MQbDLfbMeR.webp',
+  'weekend-warrior': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-weekend-warrior-UKVpPydCsPDEanDsA5FymE.webp',
+  'noodle-master': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-noodle-master-BdysyUkp6v5trFncaxaWsV.webp',
+  'cafe-hopper': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-cafe-hopper-UXDdNcfhxUo4aG7aaX2KUG.webp',
+  'spender-supreme': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-spender-supreme-H6bQiuSwoP6j7rDs34WdYz.webp',
+  'frugal-traveler': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-frugal-traveler-8d9HSptFCoyMyCj4uKcBP4.webp',
+  'activity-seeker': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-activity-seeker-KPvqFcjy5CYHuKoBfgog9U.webp',
+  'consistent-spender': 'https://d2xsxph8kpxj0f.cloudfront.net/310519663789310444/gPqDA8oDXYARxj2G8GPSGZ/badge-consistent-spender-FqwQ5yybCoWiY93YJMojXM.webp',
 };
 
 export function AchievementsCard({ achievements }: { achievements: Achievement[] }) {

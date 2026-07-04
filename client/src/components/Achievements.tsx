@@ -120,21 +120,27 @@ export function AchievementsCard({ achievements }: { achievements: Achievement[]
                       >
                         {/* Front - Badge Image */}
                         <div
-                          className="absolute w-full h-full rounded-lg overflow-hidden"
+                          className="absolute w-full h-full rounded-lg overflow-hidden flex items-center justify-center"
                           style={{
                             backfaceVisibility: 'hidden',
-                            background: 'transparent'
+                            background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)',
+                            backdropFilter: 'blur(10px)',
+                            border: '1px solid rgba(255,255,255,0.1)'
                           }}
                         >
                           {badgeImage ? (
                             <img
                               src={badgeImage}
                               alt={achievement.name}
-                              className="w-full h-full object-contain"
+                              className="w-full h-full object-cover"
                               loading="lazy"
+                              onError={(e) => {
+                                // Fallback if image fails to load
+                                e.currentTarget.style.display = 'none';
+                              }}
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-4xl">{achievement.icon}</div>
+                            <div className="text-4xl">{achievement.icon}</div>
                           )}
                           {!achievement.unlocked && (
                             <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center">
@@ -145,14 +151,17 @@ export function AchievementsCard({ achievements }: { achievements: Achievement[]
 
                         {/* Back - Description */}
                         <div
-                          className="absolute w-full h-full rounded-xl p-3 flex flex-col items-center justify-center text-center bg-gradient-to-br from-white/10 to-white/5 border border-white/20"
+                          className="absolute w-full h-full rounded-lg p-3 flex flex-col items-center justify-center text-center"
                           style={{
                             backfaceVisibility: 'hidden',
-                            transform: 'rotateY(180deg)'
+                            transform: 'rotateY(180deg)',
+                            background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)',
+                            backdropFilter: 'blur(10px)',
+                            border: '1px solid rgba(255,255,255,0.15)'
                           }}
                         >
-                          <div className="text-xs font-semibold text-white/80 mb-2">{achievement.name}</div>
-                          <div className="text-xs text-white/60">{achievement.description}</div>
+                          <div className="text-xs font-semibold text-white/90 mb-2">{achievement.name}</div>
+                          <div className="text-xs text-white/70 leading-tight">{achievement.description}</div>
                           {achievement.unlocked && (
                             <div className="mt-2 text-yellow-400 text-xs font-bold">✓ UNLOCKED</div>
                           )}

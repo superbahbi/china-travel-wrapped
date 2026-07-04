@@ -179,7 +179,7 @@ export default function Home() {
             {/* ── CARD 1: Total Spent ── */}
             <WrappedCard gradient="linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)">
               <div className="p-8 text-white">
-                <div className="text-sm font-semibold tracking-widest uppercase opacity-70 mb-2">They've spent</div>
+                <div className="text-sm font-semibold tracking-widest uppercase opacity-70 mb-2">I've spent</div>
                 <div className="flex items-end gap-3 mb-1">
                   <div className="text-7xl sm:text-8xl font-bold text-white" style={{ fontFamily: 'Syne, sans-serif' }}>
                     {formatCurrency(stats.grandTotal, stats.grandTotalCNY)}
@@ -216,7 +216,7 @@ export default function Home() {
                   {currency === 'usd' ? '$' : '¥'}{stats.mostExpensiveDay?.total.toFixed(0)} peak
                 </div>
                 <div className="text-white/50 text-sm mb-6">
-                  on {formatDate(stats.mostExpensiveDay?.date || '')} · their biggest spending day
+                  on {formatDate(stats.mostExpensiveDay?.date || '')} · my biggest spending day
                 </div>
                 <ResponsiveContainer width="100%" height={200}>
                   <AreaChart data={stats.dayStats.map(d => ({ date: formatDate(d.date), total: d.total, city: d.cities[0] || 'Trip' }))}>
@@ -244,12 +244,12 @@ export default function Home() {
             {/* ── CARD 3: Top Category ── */}
             <WrappedCard gradient={`linear-gradient(135deg, ${getCategoryColor(stats.topCategory?.category || 'Food')}cc 0%, ${getCategoryColor(stats.topCategory?.category || 'Food')}44 100%)`}>
               <div className="p-8 text-white">
-                <div className="text-sm font-semibold tracking-widest uppercase opacity-70 mb-2">Their #1 spend</div>
+                <div className="text-sm font-semibold tracking-widest uppercase opacity-70 mb-2">My #1 spend</div>
                 <div className="text-6xl font-bold mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
                   {stats.topCategory?.category}
                 </div>
                 <div className="text-white/70 text-lg mb-6">
-                  <span className="font-bold text-white">{currency === 'usd' ? '$' : '¥'}{stats.topCategory?.total.toFixed(0)}</span> — {stats.topCategory?.percentage.toFixed(0)}% of their total budget
+                  <span className="font-bold text-white">{currency === 'usd' ? '$' : '¥'}{stats.topCategory?.total.toFixed(0)}</span> — {stats.topCategory?.percentage.toFixed(0)}% of my total budget
                 </div>
                 <div className="space-y-3">
                   {stats.categoryStats.slice(0, 6).map((cat) => (
@@ -356,7 +356,7 @@ export default function Home() {
               <div className="p-8 text-white">
                 <div className="flex items-center gap-2 mb-2">
                   <Utensils className="w-5 h-5 text-white/70" />
-                  <div className="text-sm font-semibold tracking-widest uppercase opacity-70">They ate well</div>
+                  <div className="text-sm font-semibold tracking-widest uppercase opacity-70">I ate well</div>
                 </div>
                 <div className="text-7xl font-bold mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
                   {currency === 'usd' ? '$' : '¥'}{stats.foodTotal.toFixed(0)}
@@ -479,7 +479,7 @@ export default function Home() {
                     {stats.topMerchant.name}
                   </div>
                   <div className="text-white/70 text-lg mb-6">
-                    They went back <span className="font-bold text-white">{stats.topMerchant.count} times</span> — spending {currency === 'usd' ? '$' : '¥'}{stats.topMerchant.total.toFixed(2)} total
+                    I went back <span className="font-bold text-white">{stats.topMerchant.count} times</span> — spending {currency === 'usd' ? '$' : '¥'}{stats.topMerchant.total.toFixed(2)} total
                   </div>
                 </div>
               </WrappedCard>

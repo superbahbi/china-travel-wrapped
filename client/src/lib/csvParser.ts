@@ -242,6 +242,7 @@ export function computeTripStats(transactions: Transaction[]): TripStats {
 
   const merchantMap: Record<string, { count: number; total: number; totalCNY: number }> = {};
   expenses.forEach(t => {
+    if (t.category === 'Transport' || t.category === 'Intercity Transport') return;
     if (!merchantMap[t.merchant]) merchantMap[t.merchant] = { count: 0, total: 0, totalCNY: 0 };
     merchantMap[t.merchant].count += 1;
     merchantMap[t.merchant].total += Math.abs(t.usd);

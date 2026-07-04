@@ -806,36 +806,35 @@ function DailyLogCard({ stats, currency }: { stats: TripStats; currency: 'cny' |
         <div className="text-sm font-semibold tracking-widest uppercase text-white/50 mb-1">Daily Log</div>
         <div className="text-2xl font-bold text-white" style={{ fontFamily: 'Syne, sans-serif' }}>Every day, every yuan</div>
       </div>
-      <div className="divide-y divide-white/5">
+      <div className="divide-y divide-white/5 max-h-[600px] overflow-y-auto">
         {stats.dayStats.slice().reverse().map((day) => (
           <div key={day.date}>
             <button
-              className="w-full flex items-center justify-between px-6 py-3 hover:bg-white/5 transition-colors text-left"
+              className="w-full flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors text-left group"
               onClick={() => setExpanded(expanded === day.date ? null : day.date)}
             >
-              <div className="flex items-center gap-3">
-                <span className="text-white/30 text-xs mono">{formatDateFull(day.date)}</span>
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                <span className="text-white/40 text-xs mono font-medium flex-shrink-0">{formatDateFull(day.date)}</span>
                 {day.cities.length > 0 && (
-                  <span className="text-xs text-white/50 flex items-center gap-1">
+                  <span className="text-xs text-white/50 flex items-center gap-1 flex-shrink-0">
                     <MapPin className="w-3 h-3" />{day.cities.join(' → ')}
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-3">
-                <CategoryPill label={day.topCategory} color={getCategoryColor(day.topCategory)} size="sm" />
-                <span className="mono text-sm font-bold text-white">${day.total.toFixed(2)}</span>
-                <ArrowRight className={`w-4 h-4 text-white/30 transition-transform ${expanded === day.date ? 'rotate-90' : ''}`} />
+              <div className="flex items-center gap-4 flex-shrink-0">
+                <span className="mono text-sm font-bold text-white/90">${day.total.toFixed(2)}</span>
+                <ArrowRight className={`w-4 h-4 text-white/30 transition-transform group-hover:text-white/60 ${expanded === day.date ? 'rotate-90' : ''}`} />
               </div>
             </button>
             {expanded === day.date && (
-              <div className="px-6 pb-3 space-y-1.5 bg-white/3">
+              <div className="px-6 py-3 space-y-2 bg-white/2 border-t border-white/5">
                 {day.transactions.filter(t => t.usd < 0).map((t, i) => (
-                  <div key={i} className="flex justify-between items-center py-1.5 border-b border-white/5">
-                    <div>
-                      <span className="text-sm text-white/80">{t.merchant}</span>
-                      <span className="text-xs text-white/30 ml-2">{t.category}</span>
+                  <div key={i} className="flex justify-between items-start py-2 hover:bg-white/5 px-2 rounded transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm text-white/90 font-medium truncate">{t.merchant}</div>
+                      <div className="text-xs text-white/40 mt-0.5">{t.category}</div>
                     </div>
-                    <span className="mono text-sm text-white/60">{currency === "usd" ? `$${Math.abs(t.usd).toFixed(2)}` : `¥${Math.abs(t.cny).toFixed(0)}`}</span>
+                    <span className="mono text-sm text-white/70 font-semibold ml-3 flex-shrink-0">{currency === "usd" ? `$${Math.abs(t.usd).toFixed(2)}` : `¥${Math.abs(t.cny).toFixed(0)}`}</span>
                   </div>
                 ))}
               </div>

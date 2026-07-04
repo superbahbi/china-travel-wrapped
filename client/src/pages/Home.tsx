@@ -758,7 +758,7 @@ function CityRouteCard({ stats }: { stats: TripStats }) {
       className={`reveal rounded-3xl overflow-hidden p-8 text-white ${visible ? 'visible' : ''}`}
       style={{ background: 'linear-gradient(135deg, #1a0533 0%, #0d1b2a 100%)', border: '1px solid rgba(255,255,255,0.08)', transitionDelay: '0ms' }}
     >
-      <div className="text-sm font-semibold tracking-widest uppercase text-white/50 mb-4">Your Journey</div>
+      <div className="text-sm font-semibold tracking-widest uppercase text-white/50 mb-4">My Journey</div>
       <div className="text-3xl font-bold leading-tight" style={{ fontFamily: 'Syne, sans-serif' }}>
         {cityOrder.map((city, i) => (
           <div key={i}>

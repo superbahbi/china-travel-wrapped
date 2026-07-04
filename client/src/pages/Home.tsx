@@ -743,89 +743,20 @@ function PaceTrackerCard({ stats }: { stats: TripStats }) {
 // City route timeline card
 function CityRouteCard({ stats }: { stats: TripStats }) {
   const { ref, visible } = useScrollReveal();
-  // Build city journey in chronological order
-  const cityJourney: { city: string; date: string; days: number }[] = [];
-  let lastCity = '';
-  let startDate = '';
-  let dayCount = 0;
-  stats.dayStats.forEach((day) => {
-    const city = day.cities[0] || 'Trip-wide';
-    if (city !== lastCity) {
-      if (lastCity) cityJourney.push({ city: lastCity, date: startDate, days: dayCount });
-      lastCity = city;
-      startDate = day.date;
-      dayCount = 1;
-    } else {
-      dayCount++;
-    }
-  });
-  if (lastCity) cityJourney.push({ city: lastCity, date: startDate, days: dayCount });
-
-  const filteredJourney = cityJourney.filter(c => c.city !== 'Trip-wide');
 
   return (
     <div
       ref={ref}
-      className={`reveal rounded-3xl overflow-hidden ${visible ? 'visible' : ''}`}
+      className={`reveal rounded-3xl overflow-hidden p-8 text-white ${visible ? 'visible' : ''}`}
       style={{ background: 'linear-gradient(135deg, #1a0533 0%, #0d1b2a 100%)', border: '1px solid rgba(255,255,255,0.08)', transitionDelay: '0ms' }}
     >
-      <div className="p-8 text-white">
-        <div className="text-sm font-semibold tracking-widest uppercase text-white/50 mb-3">Your Journey</div>
-        <div className="text-4xl font-bold mb-8" style={{ fontFamily: 'Syne, sans-serif' }}>
-          {stats.cityStats.map(c => c.city).join(' → ')}
-        </div>
-        
-        {/* Timeline visualization */}
-        <div className="space-y-4">
-          {filteredJourney.map((stop, i) => (
-            <div key={i}>
-              <div className="flex items-start gap-4">
-                {/* Timeline dot and line */}
-                <div className="flex flex-col items-center pt-1 flex-shrink-0">
-                  <div className="w-3 h-3 rounded-full" style={{ background: getCityGradient(stop.city) }} />
-                  {i < filteredJourney.length - 1 && (
-                    <div className="w-0.5 h-12 mt-2" style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(255,255,255,0.05))' }} />
-                  )}
-                </div>
-                
-                {/* Stop card */}
-                <div
-                  className="flex-1 rounded-2xl px-5 py-4 text-white hover:shadow-lg transition-all duration-300 group"
-                  style={{
-                    background: getCityGradient(stop.city),
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
-                  }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="text-lg font-bold group-hover:translate-x-1 transition-transform">{stop.city}</div>
-                      <div className="text-sm text-white/80 mt-1">{stop.days} {stop.days === 1 ? 'day' : 'days'}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs text-white/70 font-medium">{formatDate(stop.date)}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        {/* Summary stats */}
-        <div className="mt-8 pt-6 border-t border-white/10 grid grid-cols-3 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>{filteredJourney.length}</div>
-            <div className="text-xs text-white/50 mt-1">cities visited</div>
+      <div className="text-sm font-semibold tracking-widest uppercase text-white/50 mb-4">Your Journey</div>
+      <div className="text-5xl font-bold leading-tight" style={{ fontFamily: 'Syne, sans-serif' }}>
+        {stats.cityStats.map((c, i) => (
+          <div key={i}>
+            {c.city} {i < stats.cityStats.length - 1 && <span className="text-white/40">→</span>}
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>{filteredJourney.reduce((sum, j) => sum + j.days, 0)}</div>
-            <div className="text-xs text-white/50 mt-1">days traveled</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>{stats.daysTracked}</div>
-            <div className="text-xs text-white/50 mt-1">total days</div>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );

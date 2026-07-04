@@ -473,7 +473,7 @@ export default function Home() {
                 <div className="p-8 text-white">
                   <div className="flex items-center gap-2 mb-2">
                     <Zap className="w-5 h-5 text-white/70" />
-                    <div className="text-sm font-semibold tracking-widest uppercase opacity-70">Your go-to spot</div>
+                    <div className="text-sm font-semibold tracking-widest uppercase opacity-70">My go-to spot</div>
                   </div>
                   <div className="text-5xl font-bold mb-2 leading-tight" style={{ fontFamily: 'Syne, sans-serif' }}>
                     {stats.topMerchant.name}
@@ -589,7 +589,7 @@ export default function Home() {
             {/* ── CARD 13: Payment Methods ── */}
             <WrappedCard gradient="linear-gradient(135deg, #0f0c29 0%, #302b63 100%)">
               <div className="p-8 text-white">
-                <div className="text-sm font-semibold tracking-widest uppercase opacity-70 mb-6">How You Paid</div>
+                <div className="text-sm font-semibold tracking-widest uppercase opacity-70 mb-6">How I Paid</div>
                 <div className="space-y-3">
                   {Object.entries(stats.paymentMethods)
                     .sort((a, b) => b[1] - a[1])
@@ -619,7 +619,7 @@ export default function Home() {
                 <div className="p-8 text-white">
                   <div className="flex items-center gap-2 mb-6">
                     <Hotel className="w-5 h-5" />
-                    <div className="text-sm font-semibold tracking-widest uppercase opacity-70">Where You Slept</div>
+                    <div className="text-sm font-semibold tracking-widest uppercase opacity-70">Where I Slept</div>
                   </div>
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {accommodations.map((acc, i) => (

@@ -123,7 +123,8 @@ export function AchievementsCard({ achievements }: { achievements: Achievement[]
                           className="absolute w-full h-full rounded-lg overflow-hidden flex items-center justify-center"
                           style={{
                             backfaceVisibility: 'hidden',
-                            background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)',
+                            backgroundColor: '#2a2a3e',
+                            backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)',
                             backdropFilter: 'blur(10px)',
                             border: '1px solid rgba(255,255,255,0.1)'
                           }}
@@ -155,7 +156,8 @@ export function AchievementsCard({ achievements }: { achievements: Achievement[]
                           style={{
                             backfaceVisibility: 'hidden',
                             transform: 'rotateY(180deg)',
-                            background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)',
+                            backgroundColor: '#2a2a3e',
+                            backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)',
                             backdropFilter: 'blur(10px)',
                             border: '1px solid rgba(255,255,255,0.15)'
                           }}
